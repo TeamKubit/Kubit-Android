@@ -2,4 +2,36 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="text_black">#FF202020</color>
+    <color name="transparent">#00FFFFFF</color>
+
+    <color name="background">@color/white</color>
+    <color name="primary">#FF1C4528</color>
+    <color name="secondary">#FF2E653D</color>
+
+    <color name="text">#FF202020</color>
+    <color name="gray">#FF9E9E9E</color>
+
+    <color name="candle">#FFEEEEEE</color>
+    <color name="border">#FFEAEAEA</color>
+
+    <color name="coin_blue">#FF2F5FBD</color>
+    <color name="coin_red">#FFB95338</color>
+
+    <color name="portfolio_01">#FF94B24A</color>
+    <color name="portfolio_02">#FF1081AC</color>
+    <color name="portfolio_03">#FF6B5994</color>
+    <color name="portfolio_04">#FFB569A4</color>
+    <color name="portfolio_05">#FFF77929</color>
+    <color name="portfolio_06">#FFFFB23A</color>
+    <color name="portfolio_07">#FFC6926B</color>
+    <color name="portfolio_08">#FFD5B252</color>
+    <color name="portfolio_09">#FF638EAD</color>
+    <color name="portfolio_10">#FFBDBEC5</color>
+
+    <color name="transaction_blue">#FFECF3FB</color>
+    <color name="transaction_red">#FFFBF1F0</color>
+
+    <color name="dialog_confirm">#FF1A6CBD</color>
+    <color name="dialog_cancel">#FFB95338</color>
 </resources>
