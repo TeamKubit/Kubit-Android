@@ -5,6 +5,8 @@
     <color name="text_black">#FF202020</color>
     <color name="transparent">#00FFFFFF</color>
 
+    <color name="intro_text">@color/white</color>
+
     <color name="background">@color/white</color>
     <color name="primary">#FF1C4528</color>
     <color name="secondary">#FF2E653D</color>

@@ -1,5 +1,6 @@
 <resources>
-    <string name="app_name">Kubit</string>
+    <string name="app_name">KUBIT</string>
+    <string name="app_description">가장 신뢰받을 가상화폐 모의투자</string>
 
     <string name="dialog_msg_001">잠시만 기다려 주세요.</string>
     <string name="dialog_msg_002">네트워크 연결이 필요합니다.\n네트워크 연결 후에 다시 실행해주세요.</string>
