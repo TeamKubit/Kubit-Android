@@ -17,4 +17,7 @@
 
     <color name="transaction_blue">#FF081D3A</color>
     <color name="transaction_red">#FF241A23</color>
+
+    <color name="tab_indicator">@color/text</color>
+    <color name="investment_btn">@color/text</color>
 </resources>

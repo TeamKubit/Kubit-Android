@@ -20,6 +20,34 @@
     <string name="coinList_signedChangeRate">전일대비</string>
     <string name="coinList_accTradePrice24H">거래대금</string>
 
+    <string name="investment_title">투자내역</string>
+    <string name="investment_tab_asset">보유자산</string>
+    <string name="investment_tab_record">거래내역</string>
+    <string name="investment_tab_not_yet">미체결</string>
+    <string name="investment_delete_select_order">선택주문 취소</string>
+
+    <string name="investmentAssetItem_title">내 보유자산</string>
+    <string name="investmentAssetItem_krwTitle">보유 KRW</string>
+    <string name="investmentAssetItem_totalAssetTitle">총 보유자산</string>
+    <string name="investmentAssetItem_totalBidPriceTitle">총매수</string>
+    <string name="investmentAssetItem_changeValuationTitle">평가손익</string>
+    <string name="investmentAssetItem_totalValuationTitle">총평가</string>
+    <string name="investmentAssetItem_earningRateTitle">수익률</string>
+
+    <string name="investmentPortfolioItem_title">보유자산 포트폴리오</string>
+
+    <string name="investmentWalletItem_quantityTitle">보유수량</string>
+    <string name="investmentWalletItem_bidAvgPriceTitle">매수평균가</string>
+    <string name="investmentWalletItem_valuationPriceTitle">평가금액</string>
+    <string name="investmentWalletItem_bidPriceTitle">매수금액</string>
+
+    <string name="investmentRecordItem_timeTitle">체결시간</string>
+    <string name="investmentRecordItem_tradePriceTitle">거래금액</string>
+    <string name="investmentRecordItem_quantityTitle">거래수량</string>
+    <string name="investmentRecordItem_tradeUnitPriceTitle">거래단가</string>
+    <string name="investmentRecordItem_feeTitle">수수료</string>
+    <string name="investmentRecordItem_returnPriceTitle">정산금액</string>
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

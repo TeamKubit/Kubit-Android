@@ -38,4 +38,7 @@
 
     <color name="dialog_confirm">#FF1A6CBD</color>
     <color name="dialog_cancel">#FFB95338</color>
+
+    <color name="tab_indicator">@color/primary</color>
+    <color name="investment_btn">@color/white</color>
 </resources>
