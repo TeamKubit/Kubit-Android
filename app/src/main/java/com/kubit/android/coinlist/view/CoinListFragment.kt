@@ -1,9 +1,12 @@
 package com.kubit.android.coinlist.view
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
@@ -62,14 +65,16 @@ class CoinListFragment : BaseFragment() {
     // endregion Fragment LifeCycle
 
     private fun setObserver() {
-        model.coinSnapshotDataList.observe(viewLifecycleOwner, Observer { coinSnapshotDataList ->
-            coinListAdapter?.update(coinSnapshotDataList)
-        })
+        model.filteredCoinSnapshotDataList.observe(
+            viewLifecycleOwner,
+            Observer { coinSnapshotDataList ->
+                coinListAdapter?.update(coinSnapshotDataList)
+            })
     }
 
     private fun init() {
         val mAdapter = CoinListAdapter(arrayListOf()) { coinSnapshotData ->
-
+            // TODO: 호가창 화면으로 전환
         }
         coinListAdapter = mAdapter
 
@@ -86,6 +91,41 @@ class CoinListFragment : BaseFragment() {
                         borderColor = ContextCompat.getColor(requireContext(), R.color.border)
                     )
                 )
+            }
+
+            ivCoinListSearch.setOnClickListener {
+                etCoinListSearch.focus()
+            }
+            etCoinListSearch.addTextChangedListener(object : TextWatcher {
+                override fun beforeTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    count: Int,
+                    after: Int
+                ) {
+                }
+
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                    if (s != null) {
+                        val query = s.toString()
+                        model.setSearchQuery(query)
+                    }
+                }
+
+                override fun afterTextChanged(s: Editable?) {
+                }
+            })
+            etCoinListSearch.setOnEditorActionListener { view, actionId, event ->
+                when (actionId) {
+                    EditorInfo.IME_ACTION_SEARCH -> {
+                        etCoinListSearch.clearFocus(isKeyboardHide = true)
+                        true
+                    }
+
+                    else -> {
+                        false
+                    }
+                }
             }
         }
     }

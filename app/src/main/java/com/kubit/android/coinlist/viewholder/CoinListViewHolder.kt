@@ -39,8 +39,8 @@ class CoinListViewHolder(
 
             val colorResId = when (pData.change) {
                 PriceChangeType.EVEN -> R.color.gray
-                PriceChangeType.RISE -> R.color.coin_blue
-                PriceChangeType.FALL -> R.color.coin_red
+                PriceChangeType.RISE -> R.color.coin_red
+                PriceChangeType.FALL -> R.color.coin_blue
             }
             tvCoinListItemTradePrice.setTextColor(
                 ContextCompat.getColor(

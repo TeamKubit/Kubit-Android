@@ -28,12 +28,22 @@ class MainViewModel(
 
     private lateinit var marketData: KubitMarketData
 
+    private var _searchQuery: String = ""
+    private val searchQuery: String get() = _searchQuery
+
     /**
      * 코인 스냅샷 데이터 리스트
      */
     private val _coinSnapshotDataList: MutableLiveData<List<CoinSnapshotData>> =
         MutableLiveData(listOf())
-    val coinSnapshotDataList: LiveData<List<CoinSnapshotData>> = _coinSnapshotDataList
+    private val coinSnapshotDataList: LiveData<List<CoinSnapshotData>> = _coinSnapshotDataList
+
+    /**
+     * 검색어에 의해 필터링된 코인 스냅샷 데이터 리스트
+     */
+    private val _filterdCoinSnapshotDataList: MutableLiveData<List<CoinSnapshotData>> =
+        MutableLiveData(listOf())
+    val filteredCoinSnapshotDataList: LiveData<List<CoinSnapshotData>> get() = _filterdCoinSnapshotDataList
 
     fun initMarketData(pMarketData: KubitMarketData) {
         marketData = pMarketData
@@ -43,6 +53,26 @@ class MainViewModel(
         if (tabRouter.value != pTabRouter) {
             _tabRouter.value = pTabRouter
         }
+    }
+
+    fun setSearchQuery(pQuery: String) {
+        _searchQuery = pQuery
+        coinSnapshotDataList.value?.let { coinSnapshotData ->
+            setFilteredCoinSnapshotDataList(coinSnapshotData)
+        }
+    }
+
+    private fun setFilteredCoinSnapshotDataList(
+        pSnapshotDataList: List<CoinSnapshotData>
+    ) {
+        val filteredList = arrayListOf<CoinSnapshotData>()
+        val query = searchQuery
+        for (snapshot in pSnapshotDataList) {
+            if (snapshot.contain(query)) {
+                filteredList.add(snapshot)
+            }
+        }
+        _filterdCoinSnapshotDataList.postValue(filteredList)
     }
 
     fun requestTickerData(
@@ -55,6 +85,7 @@ class MainViewModel(
                 onSuccessListener = { snapshotDataList ->
                     DLog.d(TAG, "snapshotDataList=$snapshotDataList")
                     _coinSnapshotDataList.postValue(snapshotDataList)
+                    setFilteredCoinSnapshotDataList(snapshotDataList)
                 },
                 onFailListener = { failMsg ->
                     DLog.e(TAG, failMsg)

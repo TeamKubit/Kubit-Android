@@ -12,6 +12,8 @@
     <string name="bottom_nav_profile">내정보</string>
 
     <string name="coinList_title">거래소</string>
+    <string name="coinList_krwMarket">KRW</string>
+    <string name="coinList_favoriteMarket">관심</string>
     <string name="coinList_searchHint">코인명 검색</string>
     <string name="coinList_coinName">코인명</string>
     <string name="coinList_tradePrice">현재가</string>

@@ -121,8 +121,14 @@ data class CoinSnapshotData(
     /**
      * 타임스탬프
      */
-    val timestamp: Long
+    val timestamp: Long,
+    /**
+     * 검색어와 비교할 문자열
+     */
+    private val containQuery: String = nameKor + nameEng + market
 ) {
+
+    fun contain(pQuery: String): Boolean = containQuery.contains(pQuery)
 
     override fun toString(): String {
         return "$TAG{" +

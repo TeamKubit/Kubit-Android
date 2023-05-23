@@ -83,7 +83,7 @@ class KubitChangeRateStickView : View {
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val width = ConvertUtil.dp2px(context, 15)
+        val width = ConvertUtil.dp2px(context, 10)
         val height = max(MeasureSpec.getSize(heightMeasureSpec), ConvertUtil.dp2px(context, 40))
         setMeasuredDimension(width, height)
     }

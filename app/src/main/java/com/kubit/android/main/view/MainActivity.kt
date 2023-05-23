@@ -1,7 +1,12 @@
 package com.kubit.android.main.view
 
+import android.content.Context
+import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
+import android.view.MotionEvent
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -11,6 +16,7 @@ import com.kubit.android.base.BaseViewModel
 import com.kubit.android.coinlist.view.CoinListFragment
 import com.kubit.android.common.util.DLog
 import com.kubit.android.databinding.ActivityMainBinding
+import com.kubit.android.investment.view.InvestmentFragment
 import com.kubit.android.main.viewmodel.MainViewModel
 import com.kubit.android.model.data.market.KubitMarketData
 import com.kubit.android.model.data.route.KubitTabRouter
@@ -74,13 +80,14 @@ class MainActivity : BaseActivity() {
         })
 
         model.tabRouter.observe(this, Observer { router ->
+            DLog.d(TAG, "tabRouter=$router")
             when (router) {
                 KubitTabRouter.COIN_LIST -> {
                     setFragment(CoinListFragment.getInstance(), CoinListFragment.TAG)
                 }
 
                 KubitTabRouter.INVESTMENT -> {
-
+                    setFragment(InvestmentFragment.getInstance(), InvestmentFragment.TAG)
                 }
 
                 KubitTabRouter.EXCHANGE -> {
@@ -99,7 +106,35 @@ class MainActivity : BaseActivity() {
     }
 
     private fun init() {
+        binding.apply {
+            navMain.setOnItemSelectedListener { menuItem ->
+                when (menuItem.itemId) {
+                    R.id.menu_home -> {
+                        model.setTabRouter(KubitTabRouter.COIN_LIST)
+                        true
+                    }
 
+                    R.id.menu_investment -> {
+                        model.setTabRouter(KubitTabRouter.INVESTMENT)
+                        true
+                    }
+
+                    R.id.menu_exchange -> {
+                        model.setTabRouter(KubitTabRouter.EXCHANGE)
+                        true
+                    }
+
+                    R.id.menu_profile -> {
+                        model.setTabRouter(KubitTabRouter.PROFILE)
+                        true
+                    }
+
+                    else -> {
+                        false
+                    }
+                }
+            }
+        }
     }
 
     // region Fragment 관리
@@ -109,6 +144,27 @@ class MainActivity : BaseActivity() {
             .commit()
     }
     // endregion Fragment 관리
+
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+        if (ev?.action == MotionEvent.ACTION_DOWN) {
+            val view = currentFocus
+
+            if (view is EditText) {
+                val outRect = Rect()
+                view.getGlobalVisibleRect(outRect)
+
+                if (!outRect.contains(ev.rawX.toInt(), ev.rawY.toInt())) {
+                    view.post {
+                        view.clearFocus()
+                        val imm: InputMethodManager =
+                            getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                        imm.hideSoftInputFromWindow(view.windowToken, 0)
+                    }
+                }
+            }
+        }
+        return super.dispatchTouchEvent(ev)
+    }
 
     companion object {
         private const val TAG: String = "MainActivity"

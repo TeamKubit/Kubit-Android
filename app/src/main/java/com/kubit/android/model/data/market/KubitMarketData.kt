@@ -41,6 +41,10 @@ class KubitMarketData(
             KubitMarketCode.KRW -> {
                 kubitCoinMap["KRW"] ?: listOf()
             }
+
+            KubitMarketCode.FAVORITE -> {
+                listOf()
+            }
         }
     }
 
