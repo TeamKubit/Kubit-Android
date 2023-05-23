@@ -51,9 +51,7 @@ class KubitTickerThread(
                         onFailListener("Fail to fetch Coin Snapshot Data!")
                     }
                 } catch (e: JSONException) {
-                    mHandler.post {
-                        onErrorListener(e)
-                    }
+                    onErrorListener(e)
                 }
 
                 sleep(SLEEP_TIME)

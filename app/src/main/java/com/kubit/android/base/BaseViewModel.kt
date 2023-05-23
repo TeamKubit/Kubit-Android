@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.kubit.android.intro.viewmodel.IntroViewModel
 import com.kubit.android.main.viewmodel.MainViewModel
 import com.kubit.android.model.repository.IntroRepository
+import com.kubit.android.model.repository.UpbitRepository
 
 open class BaseViewModel : ViewModel() {
 
@@ -39,11 +40,11 @@ open class BaseViewModel : ViewModel() {
     }
 
     fun setExceptionData(pException: Exception) {
-        _exceptionData.value = pException
+        _exceptionData.postValue(pException)
     }
 
     fun setApiFailMsg(pMsg: String) {
-        _apiFailMsg.value = pMsg
+        _apiFailMsg.postValue(pMsg)
     }
 
     class Factory(private val application: Application) : ViewModelProvider.Factory {
@@ -57,7 +58,7 @@ open class BaseViewModel : ViewModel() {
             // Main Activity ViewModel
             else if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
                 return MainViewModel(
-
+                    UpbitRepository(application)
                 ) as T
             }
             // 식별되지 않은 ViewModel
