@@ -21,6 +21,7 @@ import com.kubit.android.investment.view.InvestmentFragment
 import com.kubit.android.main.viewmodel.MainViewModel
 import com.kubit.android.model.data.market.KubitMarketData
 import com.kubit.android.model.data.route.KubitTabRouter
+import com.kubit.android.profile.view.ProfileFragment
 
 class MainActivity : BaseActivity() {
 
@@ -96,7 +97,7 @@ class MainActivity : BaseActivity() {
                 }
 
                 KubitTabRouter.PROFILE -> {
-
+                    setFragment(ProfileFragment.getInstance(), ProfileFragment.TAG)
                 }
 
                 else -> {

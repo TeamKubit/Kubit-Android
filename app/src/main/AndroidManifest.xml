@@ -18,6 +18,9 @@
         android:theme="@style/Theme.Kubit"
         tools:targetApi="31">
         <activity
+            android:name=".transaction.view.TransactionActivity"
+            android:exported="false" />
+        <activity
             android:name=".intro.view.IntroActivity"
             android:exported="true">
             <intent-filter>
