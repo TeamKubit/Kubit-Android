@@ -16,6 +16,7 @@ import com.kubit.android.base.BaseViewModel
 import com.kubit.android.coinlist.view.CoinListFragment
 import com.kubit.android.common.util.DLog
 import com.kubit.android.databinding.ActivityMainBinding
+import com.kubit.android.exchange.view.ExchangeFragment
 import com.kubit.android.investment.view.InvestmentFragment
 import com.kubit.android.main.viewmodel.MainViewModel
 import com.kubit.android.model.data.market.KubitMarketData
@@ -91,7 +92,7 @@ class MainActivity : BaseActivity() {
                 }
 
                 KubitTabRouter.EXCHANGE -> {
-
+                    setFragment(ExchangeFragment.getInstance(), ExchangeFragment.TAG)
                 }
 
                 KubitTabRouter.PROFILE -> {

@@ -48,6 +48,18 @@
     <string name="investmentRecordItem_feeTitle">수수료</string>
     <string name="investmentRecordItem_returnPriceTitle">정산금액</string>
 
+    <string name="investmentNotYetItem_timeTitle">주문시간</string>
+    <string name="investmentNotYetItem_quantityTitle">주문수량</string>
+    <string name="investmentNotYetItem_priceTitle">주문가격</string>
+    <string name="investmentNotYetItem_notYetQuantityTitle">미체결량</string>
+
+    <string name="exchange_title">KRW 입출금</string>
+    <string name="exchange_totalKRWTitle">총 보유금액</string>
+    <string name="exchange_canWithdrawalTitle">출금가능</string>
+    <string name="exchange_deposit">입금하기</string>
+    <string name="exchange_withdrawal">출금하기</string>
+    <string name="exchange_recordTitle">KRW 입출금 내역</string>
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
