@@ -19,6 +19,7 @@ import com.kubit.android.common.util.ConvertUtil
 import com.kubit.android.common.util.DLog
 import com.kubit.android.databinding.FragmentCoinListBinding
 import com.kubit.android.main.viewmodel.MainViewModel
+import com.kubit.android.model.data.coin.KubitCoinInfoData
 
 class CoinListFragment : BaseFragment() {
 
@@ -74,7 +75,14 @@ class CoinListFragment : BaseFragment() {
 
     private fun init() {
         val mAdapter = CoinListAdapter(arrayListOf()) { coinSnapshotData ->
-            // TODO: 호가창 화면으로 전환
+            model.setSelectedCoinData(
+                KubitCoinInfoData(
+                    market = coinSnapshotData.market,
+                    marketCode = coinSnapshotData.marketCode,
+                    nameKor = coinSnapshotData.nameKor,
+                    nameEng = coinSnapshotData.nameEng
+                )
+            )
         }
         coinListAdapter = mAdapter
 

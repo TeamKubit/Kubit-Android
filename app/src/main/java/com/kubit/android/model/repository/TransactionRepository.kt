@@ -8,7 +8,7 @@ import com.kubit.android.model.data.coin.CoinSnapshotData
 import com.kubit.android.model.data.coin.KubitCoinInfoData
 import com.kubit.android.model.repository.thread.KubitTickerThread
 
-class UpbitRepository(
+class TransactionRepository(
     private val application: Application
 ) : BaseNetworkRepository(application, TAG) {
 
@@ -19,13 +19,13 @@ class UpbitRepository(
     /**
      * 코인 시세를 주기적으로 가져오는 Thread를 생성하는 함수
      *
-     * @param pCoinInfoDataList     코인 정보 데이터 리스트
+     * @param pSelectedCoinData     선택된 코인 정보 데이터
      * @param onSuccessListener     데이터를 성공적으로 가져왔을 때, 호출되는 콜백 함수
      * @param onFailListener        API 호출에 실패했을 때, 호출되는 콜백 함수
      * @param onErrorListener       에러가 발생했을 때, 호출되는 콜백 함수
      */
     fun makeCoinTickerThread(
-        pCoinInfoDataList: List<KubitCoinInfoData>,
+        pSelectedCoinData: KubitCoinInfoData,
         onSuccessListener: (snapshotDataList: List<CoinSnapshotData>) -> Unit,
         onFailListener: (failMsg: String) -> Unit,
         onErrorListener: (e: Exception) -> Unit
@@ -35,9 +35,12 @@ class UpbitRepository(
             return
         }
 
-        DLog.d(TAG, "makeCoinTickerThread() is called, pCoinInfoDataList=$pCoinInfoDataList")
+        DLog.d(
+            TAG,
+            "makeCoinTickerThread() is called, pSelectedCoinData=$pSelectedCoinData"
+        )
         kubitTickerThread =
-            KubitTickerThread(pCoinInfoDataList, onSuccessListener, onFailListener, onErrorListener)
+            KubitTickerThread(pSelectedCoinData, onSuccessListener, onFailListener, onErrorListener)
         kubitTickerThread?.start()
     }
 
@@ -51,7 +54,7 @@ class UpbitRepository(
 
 
     companion object {
-        private const val TAG: String = "UpbitRepository"
+        private const val TAG: String = "TransactionRepository"
     }
 
 }

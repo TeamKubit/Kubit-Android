@@ -70,6 +70,23 @@
     <string name="transaction_tab_order">주문</string>
     <string name="transaction_tab_chart">차트</string>
 
+    <string name="orderBook_tab_bid">매수</string>
+    <string name="orderBook_tab_ask">매도</string>
+    <string name="orderBook_designatedPrice">지정</string>
+    <string name="orderBook_marketPrice">시장</string>
+    <string name="orderBook_canOrderTitle">주문가능</string>
+    <string name="orderBook_quantity">수량</string>
+    <string name="orderBook_quantityPercent">가능</string>
+    <string name="orderBook_price">가격</string>
+    <string name="orderBook_totalPriceTitle">총액</string>
+    <string name="orderBook_clear">초기화</string>
+    <string name="orderBook_bid">매수</string>
+    <string name="orderBook_ask">매도</string>
+    <string name="orderBook_minOrderPriceTitle">최소주문금액</string>
+    <string name="orderBook_minOrderPrice">5,000 KRW</string>
+    <string name="orderBook_feeTitle">수수료(부가세 포함)</string>
+    <string name="orderBook_fee">0.05%</string>
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

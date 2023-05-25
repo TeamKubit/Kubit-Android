@@ -6,13 +6,11 @@ import androidx.lifecycle.viewModelScope
 import com.kubit.android.base.BaseViewModel
 import com.kubit.android.common.util.DLog
 import com.kubit.android.model.data.coin.CoinSnapshotData
+import com.kubit.android.model.data.coin.KubitCoinInfoData
 import com.kubit.android.model.data.market.KubitMarketCode
 import com.kubit.android.model.data.market.KubitMarketData
 import com.kubit.android.model.data.route.KubitTabRouter
 import com.kubit.android.model.repository.UpbitRepository
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class MainViewModel(
@@ -27,6 +25,9 @@ class MainViewModel(
     val tabRouter: LiveData<KubitTabRouter> get() = _tabRouter
 
     private lateinit var marketData: KubitMarketData
+
+    private var _selectedCoinData: MutableLiveData<KubitCoinInfoData?> = MutableLiveData(null)
+    val selectedCoinData: LiveData<KubitCoinInfoData?> get() = _selectedCoinData
 
     private var _searchQuery: String = ""
     private val searchQuery: String get() = _searchQuery
@@ -53,6 +54,10 @@ class MainViewModel(
         if (tabRouter.value != pTabRouter) {
             _tabRouter.value = pTabRouter
         }
+    }
+
+    fun setSelectedCoinData(pSelectedCoinData: KubitCoinInfoData?) {
+        _selectedCoinData.value = pSelectedCoinData
     }
 
     fun setSearchQuery(pQuery: String) {

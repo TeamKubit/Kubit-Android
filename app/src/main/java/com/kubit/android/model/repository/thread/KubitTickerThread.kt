@@ -1,7 +1,5 @@
 package com.kubit.android.model.repository.thread
 
-import android.os.Handler
-import android.os.Looper
 import com.kubit.android.common.util.DLog
 import com.kubit.android.common.util.JsonParserUtil
 import com.kubit.android.model.data.coin.CoinSnapshotData
@@ -9,14 +7,37 @@ import com.kubit.android.model.data.coin.KubitCoinInfoData
 import org.json.JSONArray
 import org.json.JSONException
 
-class KubitTickerThread(
-    private val coinInfoDataList: List<KubitCoinInfoData>,
-    private val onSuccessListener: (snapshotDataList: List<CoinSnapshotData>) -> Unit,
-    private val onFailListener: (failMsg: String) -> Unit,
-    private val onErrorListener: (e: Exception) -> Unit
-) : BaseNetworkThread(TAG) {
+class KubitTickerThread : BaseNetworkThread {
 
-    private val mHandler = Handler(Looper.getMainLooper())
+    constructor(
+        coinInfoDataList: List<KubitCoinInfoData>,
+        onSuccessListener: (snapshotDataList: List<CoinSnapshotData>) -> Unit,
+        onFailListener: (failMsg: String) -> Unit,
+        onErrorListener: (e: Exception) -> Unit
+    ) : super(TAG) {
+        this.coinInfoDataList = coinInfoDataList
+        this.onSuccessListener = onSuccessListener
+        this.onFailListener = onFailListener
+        this.onErrorListener = onErrorListener
+    }
+
+    constructor(
+        selectedCoinData: KubitCoinInfoData,
+        onSuccessListener: (snapshotDataList: List<CoinSnapshotData>) -> Unit,
+        onFailListener: (failMsg: String) -> Unit,
+        onErrorListener: (e: Exception) -> Unit
+    ) : super(TAG) {
+        this.coinInfoDataList = listOf(selectedCoinData)
+        this.onSuccessListener = onSuccessListener
+        this.onFailListener = onFailListener
+        this.onErrorListener = onErrorListener
+    }
+
+    private val coinInfoDataList: List<KubitCoinInfoData>
+    private val onSuccessListener: (snapshotDataList: List<CoinSnapshotData>) -> Unit
+    private val onFailListener: (failMsg: String) -> Unit
+    private val onErrorListener: (e: Exception) -> Unit
+
     private val jsonParserUtil: JsonParserUtil = JsonParserUtil()
 
     private var _isActive: Boolean = true

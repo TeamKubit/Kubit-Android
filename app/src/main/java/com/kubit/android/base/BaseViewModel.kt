@@ -8,7 +8,9 @@ import androidx.lifecycle.ViewModelProvider
 import com.kubit.android.intro.viewmodel.IntroViewModel
 import com.kubit.android.main.viewmodel.MainViewModel
 import com.kubit.android.model.repository.IntroRepository
+import com.kubit.android.model.repository.TransactionRepository
 import com.kubit.android.model.repository.UpbitRepository
+import com.kubit.android.transaction.viewmodel.TransactionViewModel
 
 open class BaseViewModel : ViewModel() {
 
@@ -59,6 +61,12 @@ open class BaseViewModel : ViewModel() {
             else if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
                 return MainViewModel(
                     UpbitRepository(application)
+                ) as T
+            }
+            // Transaction Activity ViewModel
+            else if (modelClass.isAssignableFrom(TransactionViewModel::class.java)) {
+                return TransactionViewModel(
+                    TransactionRepository(application)
                 ) as T
             }
             // 식별되지 않은 ViewModel

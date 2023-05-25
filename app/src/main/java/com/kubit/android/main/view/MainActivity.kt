@@ -1,13 +1,9 @@
 package com.kubit.android.main.view
 
-import android.content.Context
-import android.graphics.Rect
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.view.MotionEvent
-import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
-import androidx.fragment.app.Fragment
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.kubit.android.R
@@ -22,6 +18,7 @@ import com.kubit.android.main.viewmodel.MainViewModel
 import com.kubit.android.model.data.market.KubitMarketData
 import com.kubit.android.model.data.route.KubitTabRouter
 import com.kubit.android.profile.view.ProfileFragment
+import com.kubit.android.transaction.view.TransactionActivity
 
 class MainActivity : BaseActivity() {
 
@@ -85,24 +82,49 @@ class MainActivity : BaseActivity() {
             DLog.d(TAG, "tabRouter=$router")
             when (router) {
                 KubitTabRouter.COIN_LIST -> {
-                    setFragment(CoinListFragment.getInstance(), CoinListFragment.TAG)
+                    setFragment(
+                        R.id.fl_main,
+                        CoinListFragment.getInstance(),
+                        CoinListFragment.TAG
+                    )
                 }
 
                 KubitTabRouter.INVESTMENT -> {
-                    setFragment(InvestmentFragment.getInstance(), InvestmentFragment.TAG)
+                    setFragment(
+                        R.id.fl_main,
+                        InvestmentFragment.getInstance(),
+                        InvestmentFragment.TAG
+                    )
                 }
 
                 KubitTabRouter.EXCHANGE -> {
-                    setFragment(ExchangeFragment.getInstance(), ExchangeFragment.TAG)
+                    setFragment(
+                        R.id.fl_main,
+                        ExchangeFragment.getInstance(),
+                        ExchangeFragment.TAG
+                    )
                 }
 
                 KubitTabRouter.PROFILE -> {
-                    setFragment(ProfileFragment.getInstance(), ProfileFragment.TAG)
+                    setFragment(
+                        R.id.fl_main,
+                        ProfileFragment.getInstance(),
+                        ProfileFragment.TAG
+                    )
                 }
 
                 else -> {
                     DLog.e(TAG, "Unrecognized TabRouter=$router")
                 }
+            }
+        })
+
+        model.selectedCoinData.observe(this, Observer { selectedCoinData ->
+            if (selectedCoinData != null) {
+                val transactionIntent = Intent(this, TransactionActivity::class.java).apply {
+                    putExtra("selected_coin_data", selectedCoinData)
+                }
+                transactionIntentForResult.launch(transactionIntent)
             }
         })
     }
@@ -139,34 +161,20 @@ class MainActivity : BaseActivity() {
         }
     }
 
-    // region Fragment 관리
-    private fun setFragment(fragment: Fragment, tag: String? = null) {
-        val transaction = supportFragmentManager.beginTransaction()
-        transaction.replace(R.id.fl_main, fragment, tag)
-            .commit()
-    }
-    // endregion Fragment 관리
+    private val transactionIntentForResult =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            model.setSelectedCoinData(null)
 
-    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
-        if (ev?.action == MotionEvent.ACTION_DOWN) {
-            val view = currentFocus
+            when (result.resultCode) {
+                RESULT_OK -> {
+                    
+                }
 
-            if (view is EditText) {
-                val outRect = Rect()
-                view.getGlobalVisibleRect(outRect)
+                else -> {
 
-                if (!outRect.contains(ev.rawX.toInt(), ev.rawY.toInt())) {
-                    view.post {
-                        view.clearFocus()
-                        val imm: InputMethodManager =
-                            getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                        imm.hideSoftInputFromWindow(view.windowToken, 0)
-                    }
                 }
             }
         }
-        return super.dispatchTouchEvent(ev)
-    }
 
     companion object {
         private const val TAG: String = "MainActivity"
