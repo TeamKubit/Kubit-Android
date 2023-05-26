@@ -86,7 +86,6 @@ open class BaseNetworkThread(
     }
 
     private fun getMessage(inputStream: InputStream?): String {
-        DLog.d("${TAG}_getMessage", "inputStream=$inputStream")
         val builder = java.lang.StringBuilder()
         var reader: BufferedReader? = null
         try {

@@ -1,9 +1,10 @@
 package com.kubit.android.model.data.orderbook
 
 import com.kubit.android.model.data.coin.PriceChangeType
+import com.kubit.android.model.data.transaction.TransactionType
 
 data class OrderBookUnitData(
-    val type: Type,
+    val type: TransactionType,
     val price: Double,
     val size: Double,
     val change: PriceChangeType,
@@ -17,18 +18,6 @@ data class OrderBookUnitData(
                 "size=$size, " +
                 "change=$change, " +
                 "changeRate=$changeRate}"
-    }
-
-    enum class Type {
-        /**
-         * 매도
-         */
-        ASK,
-
-        /**
-         * 매수
-         */
-        BID
     }
 
     companion object {

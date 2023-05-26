@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    tools:context=".chart.view.ChartFragment">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_chart_setting"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="15dp"
+        android:background="@color/border"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/iv_chart_setting"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/icon_chart_setting"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <TextView
+        android:id="@+id/tv_chart_unitMinute"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:background="@drawable/back_border_secondary"
+        android:fontFamily="@font/noto_sans_kr_regular"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:letterSpacing="-0.05"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:text="@string/chart_unitMinute_3"
+        android:textColor="@color/secondary"
+        android:textSize="14dp"
+        app:layout_constraintBottom_toBottomOf="@id/cl_chart_setting"
+        app:layout_constraintRight_toLeftOf="@id/tv_chart_unitDay"
+        app:layout_constraintTop_toTopOf="@id/cl_chart_setting" />
+
+    <TextView
+        android:id="@+id/tv_chart_unitDay"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:background="@drawable/back_border"
+        android:fontFamily="@font/noto_sans_kr_regular"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:letterSpacing="-0.05"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:text="@string/chart_unitDay"
+        android:textColor="@color/text"
+        android:textSize="14dp"
+        app:layout_constraintBottom_toBottomOf="@id/cl_chart_setting"
+        app:layout_constraintRight_toLeftOf="@id/tv_chart_unitWeek"
+        app:layout_constraintTop_toTopOf="@id/cl_chart_setting" />
+
+    <TextView
+        android:id="@+id/tv_chart_unitWeek"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:background="@drawable/back_border"
+        android:fontFamily="@font/noto_sans_kr_regular"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:letterSpacing="-0.05"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:text="@string/chart_unitWeek"
+        android:textColor="@color/text"
+        android:textSize="14dp"
+        app:layout_constraintBottom_toBottomOf="@id/cl_chart_setting"
+        app:layout_constraintRight_toLeftOf="@id/tv_chart_unitMonth"
+        app:layout_constraintTop_toTopOf="@id/cl_chart_setting" />
+
+    <TextView
+        android:id="@+id/tv_chart_unitMonth"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:layout_marginRight="15dp"
+        android:background="@drawable/back_border"
+        android:fontFamily="@font/noto_sans_kr_regular"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:letterSpacing="-0.05"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:text="@string/chart_unitMonth"
+        android:textColor="@color/text"
+        android:textSize="14dp"
+        app:layout_constraintBottom_toBottomOf="@id/cl_chart_setting"
+        app:layout_constraintRight_toLeftOf="@id/cl_chart_setting"
+        app:layout_constraintTop_toTopOf="@id/cl_chart_setting" />
+
+    <com.github.mikephil.charting.charts.CandleStickChart
+        android:id="@+id/chart"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cl_chart_setting" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

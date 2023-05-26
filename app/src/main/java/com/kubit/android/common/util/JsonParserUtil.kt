@@ -1,11 +1,13 @@
 package com.kubit.android.common.util
 
+import com.kubit.android.model.data.chart.ChartCandleData
 import com.kubit.android.model.data.coin.CoinSnapshotData
 import com.kubit.android.model.data.coin.KubitCoinInfoData
 import com.kubit.android.model.data.coin.PriceChangeType
 import com.kubit.android.model.data.market.KubitMarketData
 import com.kubit.android.model.data.orderbook.OrderBookData
 import com.kubit.android.model.data.orderbook.OrderBookUnitData
+import com.kubit.android.model.data.transaction.TransactionType
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -283,7 +285,7 @@ class JsonParserUtil {
                             orderBookUnitDataList.add(
                                 index = 0,
                                 OrderBookUnitData(
-                                    OrderBookUnitData.Type.ASK,
+                                    TransactionType.ASK,
                                     askPrice,
                                     askSize,
                                     askChange,
@@ -292,7 +294,7 @@ class JsonParserUtil {
                             )
                             bidUnitDataList.add(
                                 OrderBookUnitData(
-                                    OrderBookUnitData.Type.BID,
+                                    TransactionType.BID,
                                     bidPrice,
                                     bidSize,
                                     bidChange,
@@ -317,6 +319,10 @@ class JsonParserUtil {
         } else {
             null
         }
+    }
+
+    fun getChartCandleDataList(jsonArray: JSONArray): List<ChartCandleData> {
+        
     }
 
     companion object {
@@ -360,6 +366,11 @@ class JsonParserUtil {
         private const val KEY_BID_PRICE: String = "bid_price"
         private const val KEY_ASK_SIZE: String = "ask_size"
         private const val KEY_BID_SIZE: String = "bid_size"
+
+        private const val KEY_CANDLE_DATE_TIME_UTC: String = "candle_date_time_utc"
+        private const val KEY_CANDLE_DATE_TIME_KST: String = "candle_date_time_kst"
+        private const val KEY_CANDLE_ACC_TRADE_PRICE: String = "candle_acc_trade_price"
+        private const val KEY_CANDLE_ACC_TRADE_VOLUME: String = "candle_acc_trade_volume"
     }
 
 }

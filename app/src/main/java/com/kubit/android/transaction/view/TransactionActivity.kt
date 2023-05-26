@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.kubit.android.R
 import com.kubit.android.base.BaseActivity
 import com.kubit.android.base.BaseViewModel
+import com.kubit.android.chart.view.ChartFragment
 import com.kubit.android.common.util.ConvertUtil
 import com.kubit.android.common.util.DLog
 import com.kubit.android.databinding.ActivityTransactionBinding
@@ -38,6 +39,12 @@ class TransactionActivity : BaseActivity() {
     }
     private val textColor: Int by lazy {
         ContextCompat.getColor(this, R.color.text)
+    }
+    private val whiteColor: Int by lazy {
+        ContextCompat.getColor(this, R.color.white)
+    }
+    private val grayColor: Int by lazy {
+        ContextCompat.getColor(this, R.color.gray)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -82,11 +89,19 @@ class TransactionActivity : BaseActivity() {
         model.stopTickerData()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        OrderBookFragment.clearInstance()
+        ChartFragment.clearInstance()
+    }
+
     private fun setObserver() {
         model.tabRouter.observe(this, Observer { router ->
             DLog.d(TAG, "tabRouter=$router")
             when (router) {
                 TransactionTabRouter.ORDER_BOOK -> {
+                    binding.tvTransactionTabOrder.setTextColor(whiteColor)
+                    binding.tvTransactionTabChart.setTextColor(grayColor)
                     setFragment(
                         R.id.fl_transaction,
                         OrderBookFragment.getInstance(),
@@ -95,7 +110,13 @@ class TransactionActivity : BaseActivity() {
                 }
 
                 TransactionTabRouter.CHART -> {
-
+                    binding.tvTransactionTabOrder.setTextColor(grayColor)
+                    binding.tvTransactionTabChart.setTextColor(whiteColor)
+                    setFragment(
+                        R.id.fl_transaction,
+                        ChartFragment.getInstance(),
+                        ChartFragment.TAG
+                    )
                 }
 
                 else -> {

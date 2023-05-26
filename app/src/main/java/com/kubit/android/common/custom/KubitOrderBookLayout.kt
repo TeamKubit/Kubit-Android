@@ -19,9 +19,9 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.updateMargins
 import com.kubit.android.R
 import com.kubit.android.common.util.ConvertUtil
-import com.kubit.android.common.util.DLog
 import com.kubit.android.model.data.coin.PriceChangeType
 import com.kubit.android.model.data.orderbook.OrderBookUnitData
+import com.kubit.android.model.data.transaction.TransactionType
 
 class KubitOrderBookLayout : ViewGroup {
 
@@ -69,9 +69,9 @@ class KubitOrderBookLayout : ViewGroup {
 
     init {
         val askOrderBookUnitData =
-            OrderBookUnitData(OrderBookUnitData.Type.ASK, -1.0, 0.0, PriceChangeType.RISE, 0.5)
+            OrderBookUnitData(TransactionType.ASK, -1.0, 0.0, PriceChangeType.RISE, 0.5)
         val bidOrderBookUnitData =
-            OrderBookUnitData(OrderBookUnitData.Type.BID, -1.0, 0.0, PriceChangeType.FALL, 0.5)
+            OrderBookUnitData(TransactionType.BID, -1.0, 0.0, PriceChangeType.FALL, 0.5)
         for (idx in 0 until 15) {
             val item = createOrderBookUnitView(askOrderBookUnitData)
             addView(item)
@@ -90,10 +90,10 @@ class KubitOrderBookLayout : ViewGroup {
         }
     }
 
-    private fun getBackgroundColor(type: OrderBookUnitData.Type): Int {
+    private fun getBackgroundColor(type: TransactionType): Int {
         return when (type) {
-            OrderBookUnitData.Type.ASK -> transactionBlue
-            OrderBookUnitData.Type.BID -> transactionRed
+            TransactionType.ASK -> transactionBlue
+            TransactionType.BID -> transactionRed
         }
     }
 
@@ -133,7 +133,6 @@ class KubitOrderBookLayout : ViewGroup {
                 }
                 includeFontPadding = false
                 letterSpacing = -0.05f
-                text = ConvertUtil.tradePrice2string(unitData.price)
                 gravity = Gravity.RIGHT
             }
 
@@ -156,7 +155,6 @@ class KubitOrderBookLayout : ViewGroup {
                 }
                 includeFontPadding = false
                 letterSpacing = -0.05f
-                text = ConvertUtil.changeRate2string(unitData.changeRate)
                 gravity = Gravity.RIGHT
             }
 
@@ -179,7 +177,6 @@ class KubitOrderBookLayout : ViewGroup {
                 }
                 includeFontPadding = false
                 letterSpacing = -0.05f
-                text = ConvertUtil.tradePrice2string(unitData.size)
                 gravity = Gravity.LEFT
             }
 

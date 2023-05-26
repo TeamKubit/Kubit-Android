@@ -5,10 +5,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.kubit.android.base.BaseViewModel
 import com.kubit.android.common.util.DLog
+import com.kubit.android.model.data.chart.ChartUnit
 import com.kubit.android.model.data.coin.CoinSnapshotData
 import com.kubit.android.model.data.coin.KubitCoinInfoData
 import com.kubit.android.model.data.orderbook.OrderBookData
 import com.kubit.android.model.data.route.TransactionTabRouter
+import com.kubit.android.model.data.transaction.TransactionMethod
+import com.kubit.android.model.data.transaction.TransactionType
 import com.kubit.android.model.repository.TransactionRepository
 import kotlinx.coroutines.launch
 
@@ -36,6 +39,32 @@ class TransactionViewModel(
     private val _orderBookData: MutableLiveData<OrderBookData?> = MutableLiveData(null)
     val orderBookData: LiveData<OrderBookData?> get() = _orderBookData
 
+    /**
+     * 매수 매도 여부
+     */
+    private val _transactionType: MutableLiveData<TransactionType> =
+        MutableLiveData(TransactionType.BID)
+    val transactionType: LiveData<TransactionType> get() = _transactionType
+
+    /**
+     * 지정가 거래인지 시장가 거래인지
+     */
+    private val _transactionMethod: MutableLiveData<TransactionMethod> =
+        MutableLiveData(TransactionMethod.DESIGNATED_PRICE)
+    val transactionMethod: LiveData<TransactionMethod> get() = _transactionMethod
+
+    /**
+     * 차트 단위
+     */
+    private val _chartUnit: MutableLiveData<ChartUnit> = MutableLiveData(unitMinute)
+    val chartUnit: LiveData<ChartUnit> get() = _chartUnit
+
+    /**
+     * 분 단위
+     */
+    private var _unitMinute: ChartUnit = ChartUnit.MINUTE_3
+    private val unitMinute: ChartUnit get() = _unitMinute
+
     fun initSelectedCoinData(pSelectedCoinData: KubitCoinInfoData) {
         setProgressFlag(true)
         selectedCoinData = pSelectedCoinData
@@ -45,6 +74,64 @@ class TransactionViewModel(
     fun setTabRouter(pTabRouter: TransactionTabRouter) {
         if (tabRouter.value != pTabRouter) {
             _tabRouter.value = pTabRouter
+        }
+    }
+
+    fun setTransactionType(pTransactionType: TransactionType) {
+        if (transactionType.value != pTransactionType) {
+            _transactionType.value = pTransactionType
+        }
+    }
+
+    fun setTransactionMethod(pTransactionMethod: TransactionMethod) {
+        if (transactionMethod.value != pTransactionMethod) {
+            _transactionMethod.value = pTransactionMethod
+        }
+    }
+
+    fun setChartUnitToMinute() {
+        if (chartUnit.value != unitMinute) {
+            _chartUnit.value = unitMinute
+        }
+    }
+
+    fun setChartUnitToMinute(pUnitMinute: ChartUnit) {
+        when (pUnitMinute) {
+            ChartUnit.MINUTE_1,
+            ChartUnit.MINUTE_3,
+            ChartUnit.MINUTE_5,
+            ChartUnit.MINUTE_10,
+            ChartUnit.MINUTE_15,
+            ChartUnit.MINUTE_30,
+            ChartUnit.MINUTE_60,
+            ChartUnit.MINUTE_240 -> {
+                if (unitMinute != pUnitMinute) {
+                    _unitMinute = pUnitMinute
+                    _chartUnit.value = pUnitMinute
+                }
+            }
+
+            else -> {
+                DLog.e(TAG, "$pUnitMinute is not Minute Unit!")
+            }
+        }
+    }
+
+    fun setChartUnitToDay() {
+        if (chartUnit.value != ChartUnit.DAY) {
+            _chartUnit.value = ChartUnit.DAY
+        }
+    }
+
+    fun setChartUnitToWeek() {
+        if (chartUnit.value != ChartUnit.WEEK) {
+            _chartUnit.value = ChartUnit.WEEK
+        }
+    }
+
+    fun setChartUnitToMonth() {
+        if (chartUnit.value != ChartUnit.MONTH) {
+            _chartUnit.value = ChartUnit.MONTH
         }
     }
 
