@@ -4,6 +4,8 @@ import com.kubit.android.model.data.coin.CoinSnapshotData
 import com.kubit.android.model.data.coin.KubitCoinInfoData
 import com.kubit.android.model.data.coin.PriceChangeType
 import com.kubit.android.model.data.market.KubitMarketData
+import com.kubit.android.model.data.orderbook.OrderBookData
+import com.kubit.android.model.data.orderbook.OrderBookUnitData
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -235,6 +237,88 @@ class JsonParserUtil {
         return ret
     }
 
+    fun getOrderBookData(
+        jsonArray: JSONArray,
+        openingPrice: Double
+    ): OrderBookData? {
+        if (jsonArray.length() == 0) {
+            return null
+        }
+
+        return if (!jsonArray.isNull(0)) {
+            val obj = jsonArray.getJSONObject(0)
+
+            if (obj != null) {
+                val market = getString(obj, KEY_MARKET)
+                val timestamp = getLong(obj, KEY_TIMESTAMP)
+                val totalAskSize = getDouble(obj, KEY_TOTAL_ASK_SIZE)
+                val totalBidSize = getDouble(obj, KEY_TOTAL_BID_SIZE)
+                val orderBookUnitDataList = arrayListOf<OrderBookUnitData>()
+                val bidUnitDataList = arrayListOf<OrderBookUnitData>()
+
+                val orderBookUnits = getJSONArray(obj, KEY_ORDERBOOK_UNITS)
+                if (orderBookUnits != null) {
+                    for (idx in 0 until orderBookUnits.length()) {
+                        val unitObj = orderBookUnits.getJSONObject(idx)
+
+                        if (unitObj != null) {
+                            val askPrice = getDouble(unitObj, KEY_ASK_PRICE)
+                            val bidPrice = getDouble(unitObj, KEY_BID_PRICE)
+                            val askSize = getDouble(unitObj, KEY_ASK_SIZE)
+                            val bidSize = getDouble(unitObj, KEY_BID_SIZE)
+
+                            val askChange = when {
+                                askPrice < openingPrice -> PriceChangeType.FALL
+                                askPrice > openingPrice -> PriceChangeType.RISE
+                                else -> PriceChangeType.EVEN
+                            }
+                            val askChangeRate = (askPrice - openingPrice) / openingPrice
+                            val bidChange = when {
+                                bidPrice < openingPrice -> PriceChangeType.FALL
+                                bidPrice > openingPrice -> PriceChangeType.RISE
+                                else -> PriceChangeType.EVEN
+                            }
+                            val bidChangeRate = (bidPrice - openingPrice) / openingPrice
+
+                            orderBookUnitDataList.add(
+                                index = 0,
+                                OrderBookUnitData(
+                                    OrderBookUnitData.Type.ASK,
+                                    askPrice,
+                                    askSize,
+                                    askChange,
+                                    askChangeRate
+                                )
+                            )
+                            bidUnitDataList.add(
+                                OrderBookUnitData(
+                                    OrderBookUnitData.Type.BID,
+                                    bidPrice,
+                                    bidSize,
+                                    bidChange,
+                                    bidChangeRate
+                                )
+                            )
+                        }
+                    }
+                }
+
+                orderBookUnitDataList.addAll(bidUnitDataList)
+                OrderBookData(
+                    market = market,
+                    timestamp = timestamp,
+                    totalAskSize = totalAskSize,
+                    totalBidSize = totalBidSize,
+                    unitDataList = orderBookUnitDataList
+                )
+            } else {
+                null
+            }
+        } else {
+            null
+        }
+    }
+
     companion object {
         private const val TAG: String = "JsonParserUtil"
 
@@ -268,6 +352,14 @@ class JsonParserUtil {
         private const val KEY_LOWEST_52_WEEK_PRICE: String = "lowest_52_week_price"
         private const val KEY_LOWEST_52_WEEK_DATE: String = "lowest_52_week_date"
         private const val KEY_TIMESTAMP: String = "timestamp"
+
+        private const val KEY_TOTAL_ASK_SIZE: String = "total_ask_size"
+        private const val KEY_TOTAL_BID_SIZE: String = "total_bid_size"
+        private const val KEY_ORDERBOOK_UNITS: String = "orderbook_units"
+        private const val KEY_ASK_PRICE: String = "ask_price"
+        private const val KEY_BID_PRICE: String = "bid_price"
+        private const val KEY_ASK_SIZE: String = "ask_size"
+        private const val KEY_BID_SIZE: String = "bid_size"
     }
 
 }

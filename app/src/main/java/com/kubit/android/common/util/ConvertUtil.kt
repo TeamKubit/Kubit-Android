@@ -10,11 +10,15 @@ object ConvertUtil {
     private val priceFormatterOver100 = DecimalFormat("###,###,###").apply {
         roundingMode = RoundingMode.DOWN
     }
-    private val priceFormatterUnder100 = DecimalFormat("##.00######").apply {
+    private val priceFormatterUnder100 = DecimalFormat("#0.00######").apply {
         roundingMode = RoundingMode.DOWN
     }
 
     private val changeRateFormatter = DecimalFormat("#0.00").apply {
+        roundingMode = RoundingMode.DOWN
+    }
+
+    private val orderSizeFormatter = DecimalFormat("###,###,##0.000").apply {
         roundingMode = RoundingMode.DOWN
     }
 
@@ -63,6 +67,15 @@ object ConvertUtil {
         } else {
             "${priceFormatterOver100.format(volumeUnitMillion)}백만"
         }
+    }
+
+    /**
+     * 호가 매물량을 문자열로 변환하는 함수
+     *
+     * @param pOrderSize    호가 매물량
+     */
+    fun orderSize2string(pOrderSize: Double): String {
+        return orderSizeFormatter.format(pOrderSize)
     }
 
 }

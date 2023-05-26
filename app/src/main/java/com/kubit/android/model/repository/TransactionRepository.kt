@@ -6,6 +6,8 @@ import com.kubit.android.common.util.DLog
 import com.kubit.android.common.util.JsonParserUtil
 import com.kubit.android.model.data.coin.CoinSnapshotData
 import com.kubit.android.model.data.coin.KubitCoinInfoData
+import com.kubit.android.model.data.orderbook.OrderBookData
+import com.kubit.android.model.repository.thread.KubitOrderBookThread
 import com.kubit.android.model.repository.thread.KubitTickerThread
 
 class TransactionRepository(
@@ -15,6 +17,7 @@ class TransactionRepository(
     private val jsonParserUtil: JsonParserUtil = JsonParserUtil()
 
     private var kubitTickerThread: KubitTickerThread? = null
+    private var kubitOrderBookThread: KubitOrderBookThread? = null
 
     /**
      * 코인 시세를 주기적으로 가져오는 Thread를 생성하는 함수
@@ -50,6 +53,46 @@ class TransactionRepository(
     fun stopCoinTickerThread() {
         kubitTickerThread?.kill()
         kubitTickerThread = null
+    }
+
+    /**
+     * 코인 호가 데이터를 주기적으로 가져오는 Thread를 생성하는 함수
+     *
+     * @param pSelectedCoinData     선택된 코인 정보 데이터
+     * @param pOpeningPrice         코인 시가
+     * @param onSuccessListener     데이터를 성공적으로 가져왔을 때, 호출되는 콜백 함수
+     * @param onFailListener        API 호출에 실패했을 때, 호출되는 콜백 함수
+     * @param onErrorListener       에러가 발생했을 때, 호출되는 콜백 함수
+     */
+    fun makeCoinOrderBookThread(
+        pSelectedCoinData: KubitCoinInfoData,
+        pOpeningPrice: Double,
+        onSuccessListener: (orderBookData: OrderBookData) -> Unit,
+        onFailListener: (failMsg: String) -> Unit,
+        onErrorListener: (e: Exception) -> Unit
+    ) {
+        if (kubitOrderBookThread?.isAlive == true) {
+            DLog.d(TAG, "orderBookThread is already working!")
+            return
+        }
+
+        DLog.d(
+            TAG,
+            "makeCoinOrderBookThread() is called, pSelectedCoinData=$pSelectedCoinData, pOpeningPrice=$pOpeningPrice"
+        )
+        kubitOrderBookThread = KubitOrderBookThread(
+            pSelectedCoinData,
+            pOpeningPrice,
+            onSuccessListener,
+            onFailListener,
+            onErrorListener
+        )
+        kubitOrderBookThread?.start()
+    }
+
+    fun stopCoinOrderBookThread() {
+        kubitOrderBookThread?.kill()
+        kubitOrderBookThread = null
     }
 
 

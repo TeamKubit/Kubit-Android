@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Observer
 import com.kubit.android.R
 import com.kubit.android.base.BaseFragment
 import com.kubit.android.databinding.FragmentOrderBookBinding
@@ -53,11 +54,25 @@ class OrderBookFragment : BaseFragment() {
     // endregion Fragment LifeCycle
 
     private fun setObserver() {
+        model.coinOpeningPrice.observe(viewLifecycleOwner, Observer { openingPrice ->
+            if (openingPrice != null) {
+                binding.cvOrderBook
+            }
+        })
 
+        model.orderBookData.observe(viewLifecycleOwner, Observer { orderBookData ->
+            if (orderBookData != null) {
+                binding.cvOrderBook.update(orderBookData.unitDataList)
+            }
+        })
     }
 
     private fun init() {
-
+        binding.apply {
+            cvOrderBook.post {
+                cvOrderBook.fitCenter()
+            }
+        }
     }
 
     companion object {

@@ -145,6 +145,13 @@ class TransactionActivity : BaseActivity() {
                 }
             }
         })
+
+        model.coinOpeningPrice.observe(this, Observer { openingPrice ->
+            if (openingPrice != null) {
+                DLog.d(TAG, "openingPrice=$openingPrice")
+                model.setTabRouter(TransactionTabRouter.ORDER_BOOK)
+            }
+        })
     }
 
     private fun init(pSelectedCoinData: KubitCoinInfoData) {

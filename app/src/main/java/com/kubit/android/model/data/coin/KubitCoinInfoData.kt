@@ -1,17 +1,25 @@
 package com.kubit.android.model.data.coin
 
-/**
- * @param market            업비트에서 제공중인 시장 정보 ex) KRW-BTC
- * @param marketCode        market의 접두사로써, 마켓 코드 ex) KRW
- * @param nameKor           거래 대상 암호화폐 한글명
- * @param nameEng           거래 대상 암호화폐 영문명
- * @param marketWarning     유의 종목 여부
- */
 data class KubitCoinInfoData(
+    /**
+     * 업비트에서 제공중인 시장 정보 ex) KRW-BTC
+     */
     val market: String,
+    /**
+     * market의 접두사로써, 마켓 코드 ex) KRW
+     */
     val marketCode: String,
+    /**
+     * 거래 대상 암호화폐 한글명
+     */
     val nameKor: String,
+    /**
+     * 거래 대상 암호화폐 영문명
+     */
     val nameEng: String,
+    /**
+     * 유의 종목 여부
+     */
     val marketWarning: Boolean = false
 ) : java.io.Serializable {
 
