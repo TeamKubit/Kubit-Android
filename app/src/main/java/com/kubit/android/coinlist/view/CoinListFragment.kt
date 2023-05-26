@@ -20,6 +20,7 @@ import com.kubit.android.common.util.DLog
 import com.kubit.android.databinding.FragmentCoinListBinding
 import com.kubit.android.main.viewmodel.MainViewModel
 import com.kubit.android.model.data.coin.KubitCoinInfoData
+import com.kubit.android.order.view.OrderBookFragment
 
 class CoinListFragment : BaseFragment() {
 
@@ -150,6 +151,11 @@ class CoinListFragment : BaseFragment() {
             }
 
             return instance!!
+        }
+
+        @JvmStatic
+        fun clearInstance() {
+            instance = null
         }
     }
 }

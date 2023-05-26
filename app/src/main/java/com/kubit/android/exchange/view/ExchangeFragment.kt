@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import com.kubit.android.R
 import com.kubit.android.base.BaseFragment
+import com.kubit.android.coinlist.view.CoinListFragment
 import com.kubit.android.databinding.FragmentExchangeBinding
 import com.kubit.android.main.viewmodel.MainViewModel
 
@@ -56,6 +57,11 @@ class ExchangeFragment : BaseFragment() {
             }
 
             return instance!!
+        }
+
+        @JvmStatic
+        fun clearInstance() {
+            instance = null
         }
     }
 }

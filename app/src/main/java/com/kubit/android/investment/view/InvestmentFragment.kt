@@ -8,6 +8,7 @@ import androidx.fragment.app.activityViewModels
 import com.google.android.material.tabs.TabLayout
 import com.kubit.android.R
 import com.kubit.android.base.BaseFragment
+import com.kubit.android.coinlist.view.CoinListFragment
 import com.kubit.android.databinding.FragmentInvestmentBinding
 import com.kubit.android.main.viewmodel.MainViewModel
 
@@ -96,6 +97,11 @@ class InvestmentFragment : BaseFragment() {
             }
 
             return instance!!
+        }
+
+        @JvmStatic
+        fun clearInstance() {
+            instance = null
         }
     }
 }

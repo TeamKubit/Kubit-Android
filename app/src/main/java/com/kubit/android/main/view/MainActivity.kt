@@ -3,6 +3,7 @@ package com.kubit.android.main.view
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -37,7 +38,7 @@ class MainActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        val markeData = if (savedInstanceState != null) {
+        val marketData = if (savedInstanceState != null) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 savedInstanceState.getSerializable("market_data", KubitMarketData::class.java)
             } else {
@@ -50,10 +51,18 @@ class MainActivity : BaseActivity() {
                 intent.getSerializableExtra("market_data")
             } as KubitMarketData
         }
-        model.initMarketData(markeData)
+        model.initMarketData(marketData)
 
         setObserver()
         init()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        CoinListFragment.clearInstance()
+        InvestmentFragment.clearInstance()
+        ExchangeFragment.clearInstance()
+        ProfileFragment.clearInstance()
     }
     // endregion Activity LifeCycle
 
@@ -120,6 +129,7 @@ class MainActivity : BaseActivity() {
         })
 
         model.selectedCoinData.observe(this, Observer { selectedCoinData ->
+            DLog.d(TAG, "selectedCoinData=$selectedCoinData")
             if (selectedCoinData != null) {
                 val transactionIntent = Intent(this, TransactionActivity::class.java).apply {
                     putExtra("selected_coin_data", selectedCoinData)
@@ -161,13 +171,26 @@ class MainActivity : BaseActivity() {
         }
     }
 
+    override fun onBackPressed() {
+        val tempTime: Long = System.currentTimeMillis()
+        val intervalTime = tempTime - backPressedTime
+
+        if (intervalTime in 0..FINISH_INTERVAL_TIME) {
+            super.onBackPressed()
+        } else {
+            backPressedTime = tempTime
+            val msg: String = "종료하시려면 뒤로 버튼을 한 번 더 눌러주세요."
+            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private val transactionIntentForResult =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             model.setSelectedCoinData(null)
 
             when (result.resultCode) {
                 RESULT_OK -> {
-                    
+
                 }
 
                 else -> {
@@ -178,6 +201,9 @@ class MainActivity : BaseActivity() {
 
     companion object {
         private const val TAG: String = "MainActivity"
+
+        private const val FINISH_INTERVAL_TIME: Long = 2000
+        private var backPressedTime: Long = 0
     }
 
 }
