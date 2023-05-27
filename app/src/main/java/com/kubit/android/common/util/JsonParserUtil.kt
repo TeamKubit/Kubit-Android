@@ -1,6 +1,7 @@
 package com.kubit.android.common.util
 
-import com.kubit.android.model.data.chart.ChartCandleData
+import com.github.mikephil.charting.data.CandleEntry
+import com.kubit.android.model.data.chart.ChartDataWrapper
 import com.kubit.android.model.data.coin.CoinSnapshotData
 import com.kubit.android.model.data.coin.KubitCoinInfoData
 import com.kubit.android.model.data.coin.PriceChangeType
@@ -321,8 +322,36 @@ class JsonParserUtil {
         }
     }
 
-    fun getChartCandleDataList(jsonArray: JSONArray): List<ChartCandleData> {
-        
+    fun getChartDataWrapper(jsonArray: JSONArray): ChartDataWrapper? {
+        val candleEntries: ArrayList<CandleEntry> = arrayListOf()
+
+        for (idx in 0 until jsonArray.length()) {
+            if (!jsonArray.isNull(idx)) {
+                val obj = jsonArray.getJSONObject(idx)
+
+                if (obj != null) {
+                    val openingPrice = getDouble(obj, KEY_OPENING_PRICE)
+                    val highPrice = getDouble(obj, KEY_HIGH_PRICE)
+                    val lowPrice = getDouble(obj, KEY_LOW_PRICE)
+                    val tradePrice = getDouble(obj, KEY_TRADE_PRICE)
+                    val timestamp = getLong(obj, KEY_TIMESTAMP)
+                    val candleAccTradePrice = getDouble(obj, KEY_CANDLE_ACC_TRADE_PRICE)
+                    val candleAccTradeVolume = getDouble(obj, KEY_CANDLE_ACC_TRADE_VOLUME)
+
+                    candleEntries.add(
+                        CandleEntry(
+                            idx.toFloat(),          // x
+                            highPrice.toFloat(),    // shadowH
+                            lowPrice.toFloat(),     // shadowL
+                            openingPrice.toFloat(), // open
+                            tradePrice.toFloat()    // close
+                        )
+                    )
+                }
+            }
+        }
+
+        return ChartDataWrapper(candleEntries)
     }
 
     companion object {

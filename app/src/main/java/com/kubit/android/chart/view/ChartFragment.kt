@@ -1,5 +1,7 @@
 package com.kubit.android.chart.view
 
+import android.graphics.Color
+import android.graphics.Paint
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -8,6 +10,11 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.components.YAxis
+import com.github.mikephil.charting.data.CandleData
+import com.github.mikephil.charting.data.CandleDataSet
+import com.github.mikephil.charting.data.CombinedData
 import com.kubit.android.R
 import com.kubit.android.base.BaseFragment
 import com.kubit.android.databinding.FragmentChartBinding
@@ -27,6 +34,18 @@ class ChartFragment : BaseFragment() {
     private val secondaryColor: Int by lazy {
         ContextCompat.getColor(requireContext(), R.color.secondary)
     }
+    private val coinRedColor: Int by lazy {
+        ContextCompat.getColor(requireContext(), R.color.coin_red)
+    }
+    private val coinBlueColor: Int by lazy {
+        ContextCompat.getColor(requireContext(), R.color.coin_blue)
+    }
+    private val grayColor: Int by lazy {
+        ContextCompat.getColor(requireContext(), R.color.gray)
+    }
+    private val borderColor: Int by lazy {
+        ContextCompat.getColor(requireContext(), R.color.border)
+    }
 
     // region Fragment LifeCycle
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,6 +64,16 @@ class ChartFragment : BaseFragment() {
         init()
 
         return binding.root
+    }
+
+    override fun onResume() {
+        super.onResume()
+        model.requestCoinChart()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        model.stopCoinChart()
     }
 
     override fun onDestroyView() {
@@ -108,9 +137,48 @@ class ChartFragment : BaseFragment() {
                 }
             }
         })
+
+        model.chartDataWrapper.observe(viewLifecycleOwner, Observer { chartDataWrapper ->
+            if (chartDataWrapper != null) {
+                val candleDataSet = CandleDataSet(chartDataWrapper.candleEntries, "").apply {
+                    axisDependency = YAxis.AxisDependency.LEFT
+                    // 심지 부분 설정
+                    shadowColor = grayColor
+                    shadowWidth = 0.7F
+                    // 음봉
+                    decreasingColor = coinBlueColor
+                    decreasingPaintStyle = Paint.Style.FILL
+                    // 양봉
+                    increasingColor = coinRedColor
+                    increasingPaintStyle = Paint.Style.FILL
+
+                    neutralColor = textColor
+                    setDrawValues(false)
+                    // 터치시 노란 선 제거
+                    highLightColor = Color.TRANSPARENT
+                }
+
+                binding.chartPrice.legend.apply {
+//                    setCustom(chartPriceLegendList)
+//                    textColor = Color.WHITE
+//                    verticalAlignment = Legend.LegendVerticalAlignment.TOP
+//                    horizontalAlignment = Legend.LegendHorizontalAlignment.LEFT
+//                    orientation = Legend.LegendOrientation.HORIZONTAL
+//                    setDrawInside(true)
+                }
+                binding.chartPrice.apply {
+                    data = CombinedData().apply {
+                        setData(CandleData(candleDataSet))
+                    }
+                    invalidate()
+                }
+            }
+        })
     }
 
     private fun init() {
+        initPriceChart()
+
         binding.apply {
             tvChartUnitMinute.setOnClickListener {
                 model.chartUnit.value?.let { unit ->
@@ -203,10 +271,44 @@ class ChartFragment : BaseFragment() {
                     tvChartUnitMonth.setBackgroundResource(R.drawable.back_border_secondary)
 
                     tvChartUnitMinute.setTextColor(textColor)
-                    tvChartUnitDay.setText(textColor)
-                    tvChartUnitWeek.setText(textColor)
-                    tvChartUnitMonth.setText(secondaryColor)
+                    tvChartUnitDay.setTextColor(textColor)
+                    tvChartUnitWeek.setTextColor(textColor)
+                    tvChartUnitMonth.setTextColor(secondaryColor)
                 }
+            }
+        }
+    }
+
+    private fun initPriceChart() {
+        binding.apply {
+            chartPrice.description.isEnabled = false
+            chartPrice.setMaxVisibleValueCount(200)
+            chartPrice.setPinchZoom(false)
+            chartPrice.setDrawGridBackground(false)
+            // x축 설정
+            chartPrice.xAxis.apply {
+                textColor = Color.TRANSPARENT
+                position = XAxis.XAxisPosition.BOTTOM
+                // 세로선 표시 여부 설정
+                this.setDrawGridLines(true)
+                axisLineColor = grayColor
+                gridColor = grayColor
+            }
+            // 왼쪽 y축 설정
+            chartPrice.axisLeft.apply {
+                textColor = this@ChartFragment.textColor
+                isEnabled = false
+            }
+            // 오른쪽 y축 설정
+            chartPrice.axisRight.apply {
+                setLabelCount(7, false)
+                textColor = this@ChartFragment.textColor
+                // 가로선 표시 여부 설정
+                setDrawGridLines(true)
+                // 차트의 오른쪽 테두리 라인 설정
+                setDrawAxisLine(true)
+                axisLineColor = grayColor
+                gridColor = grayColor
             }
         }
     }

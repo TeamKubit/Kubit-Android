@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.kubit.android.base.BaseViewModel
 import com.kubit.android.common.util.DLog
+import com.kubit.android.model.data.chart.ChartDataWrapper
 import com.kubit.android.model.data.chart.ChartUnit
 import com.kubit.android.model.data.coin.CoinSnapshotData
 import com.kubit.android.model.data.coin.KubitCoinInfoData
@@ -65,6 +66,12 @@ class TransactionViewModel(
     private var _unitMinute: ChartUnit = ChartUnit.MINUTE_3
     private val unitMinute: ChartUnit get() = _unitMinute
 
+    /**
+     * 차트 데이터 Wrapper
+     */
+    private val _chartDataWrapper: MutableLiveData<ChartDataWrapper?> = MutableLiveData(null)
+    val chartDataWrapper: LiveData<ChartDataWrapper?> get() = _chartDataWrapper
+
     fun initSelectedCoinData(pSelectedCoinData: KubitCoinInfoData) {
         setProgressFlag(true)
         selectedCoinData = pSelectedCoinData
@@ -92,6 +99,7 @@ class TransactionViewModel(
     fun setChartUnitToMinute() {
         if (chartUnit.value != unitMinute) {
             _chartUnit.value = unitMinute
+            transactionRepository.changeCoinChartUnit(unitMinute)
         }
     }
 
@@ -108,6 +116,7 @@ class TransactionViewModel(
                 if (unitMinute != pUnitMinute) {
                     _unitMinute = pUnitMinute
                     _chartUnit.value = pUnitMinute
+                    transactionRepository.changeCoinChartUnit(pUnitMinute)
                 }
             }
 
@@ -120,18 +129,21 @@ class TransactionViewModel(
     fun setChartUnitToDay() {
         if (chartUnit.value != ChartUnit.DAY) {
             _chartUnit.value = ChartUnit.DAY
+            transactionRepository.changeCoinChartUnit(ChartUnit.DAY)
         }
     }
 
     fun setChartUnitToWeek() {
         if (chartUnit.value != ChartUnit.WEEK) {
             _chartUnit.value = ChartUnit.WEEK
+            transactionRepository.changeCoinChartUnit(ChartUnit.WEEK)
         }
     }
 
     fun setChartUnitToMonth() {
         if (chartUnit.value != ChartUnit.MONTH) {
             _chartUnit.value = ChartUnit.MONTH
+            transactionRepository.changeCoinChartUnit(ChartUnit.MONTH)
         }
     }
 
@@ -195,6 +207,35 @@ class TransactionViewModel(
         DLog.d(TAG, "stopCoinOrderBook() is called")
         viewModelScope.launch {
             transactionRepository.stopCoinOrderBookThread()
+        }
+    }
+
+    fun requestCoinChart() {
+        DLog.d(TAG, "requestCoinChart() is called!")
+        viewModelScope.launch {
+            transactionRepository.makeCoinChartThread(
+                pSelectedCoinData = selectedCoinData,
+                pChartUnit = chartUnit.value ?: ChartUnit.MINUTE_3,
+                onSuccessListener = { chartDataWrapper ->
+                    DLog.d(TAG, "chartDataWrapper=$chartDataWrapper")
+                    _chartDataWrapper.postValue(chartDataWrapper)
+                },
+                onFailListener = { failMsg ->
+                    DLog.e(TAG, failMsg)
+                    setApiFailMsg(failMsg)
+                },
+                onErrorListener = { e ->
+                    DLog.e(TAG, e.message, e)
+                    setExceptionData(e)
+                }
+            )
+        }
+    }
+
+    fun stopCoinChart() {
+        DLog.d(TAG, "stopCoinChart() is called")
+        viewModelScope.launch {
+            transactionRepository.stopCoinChartThread()
         }
     }
 
