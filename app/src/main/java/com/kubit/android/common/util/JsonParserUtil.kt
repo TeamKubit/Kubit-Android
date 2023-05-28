@@ -1,5 +1,6 @@
 package com.kubit.android.common.util
 
+import androidx.core.util.rangeTo
 import com.github.mikephil.charting.data.CandleEntry
 import com.kubit.android.model.data.chart.ChartDataWrapper
 import com.kubit.android.model.data.coin.CoinSnapshotData
@@ -322,12 +323,13 @@ class JsonParserUtil {
         }
     }
 
-    fun getChartDataWrapper(jsonArray: JSONArray): ChartDataWrapper? {
+    fun getChartDataWrapper(jsonArray: JSONArray): ChartDataWrapper {
         val candleEntries: ArrayList<CandleEntry> = arrayListOf()
 
-        for (idx in 0 until jsonArray.length()) {
-            if (!jsonArray.isNull(idx)) {
-                val obj = jsonArray.getJSONObject(idx)
+        val length = jsonArray.length()
+        for (idx in 1..length) {
+            if (!jsonArray.isNull(length - idx)) {
+                val obj = jsonArray.getJSONObject(length - idx)
 
                 if (obj != null) {
                     val openingPrice = getDouble(obj, KEY_OPENING_PRICE)
@@ -345,7 +347,9 @@ class JsonParserUtil {
                             lowPrice.toFloat(),     // shadowL
                             openingPrice.toFloat(), // open
                             tradePrice.toFloat()    // close
-                        )
+                        ).apply {
+                            DLog.d(TAG, "idx=$idx, candleEntry=$this")
+                        }
                     )
                 }
             }
