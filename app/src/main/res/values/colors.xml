@@ -41,4 +41,35 @@
 
     <color name="tab_indicator">@color/primary</color>
     <color name="investment_btn">@color/white</color>
+
+    <color name="moving_avg_5">#FFDB11B3</color>
+    <color name="moving_avg_10">#FF0B29AF</color>
+    <color name="moving_avg_20">#FFEA9901</color>
+    <color name="moving_avg_60">#FFFF3200</color>
+    <color name="moving_avg_120">#FFAAAAAA</color>
+
+    <color name="bollinger_band_upper">#FF3233FF</color>
+    <color name="bollinger_band_middle">#FF339967</color>
+    <color name="bollinger_band_lower">#FFFFCC03</color>
+
+    <color name="daily_balance_table_1">#FF0A9A83</color>
+    <color name="daily_balance_table_2">#FF787878</color>
+    <color name="daily_balance_table_3">#FFA720DF</color>
+    <color name="daily_balance_table_4">#FFF7A26B</color>
+    <color name="daily_balance_table_5">#FF6A8CF0</color>
+
+    <color name="pivot_resistance_line_1">#FFF4A9E1</color>
+    <color name="pivot_resistance_line_2">#FFA6A2F7</color>
+    <color name="pivot_base_line">#FF9DDEF2</color>
+    <color name="pivot_support_line_1">#FFA2ECAF</color>
+    <color name="pivot_support_line_2">#FFFDBCA0</color>
+
+    <color name="envelopes_upper_limit">#FF65CC33</color>
+    <color name="envelopes_base_line">#FF3332CB</color>
+    <color name="envelopes_lower_bound">#FFFF339A</color>
+
+    <color name="price_channels_upper_limit">#FF55C563</color>
+    <color name="price_channels_base_line">#FFCCCCCC</color>
+    <color name="price_channels_lower_bound">#FF55C563</color>
+
 </resources>

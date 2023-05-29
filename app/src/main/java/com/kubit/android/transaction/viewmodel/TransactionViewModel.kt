@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.kubit.android.base.BaseViewModel
 import com.kubit.android.common.util.DLog
 import com.kubit.android.model.data.chart.ChartDataWrapper
+import com.kubit.android.model.data.chart.ChartMainIndicator
 import com.kubit.android.model.data.chart.ChartUnit
 import com.kubit.android.model.data.coin.CoinSnapshotData
 import com.kubit.android.model.data.coin.KubitCoinInfoData
@@ -55,6 +56,13 @@ class TransactionViewModel(
     val transactionMethod: LiveData<TransactionMethod> get() = _transactionMethod
 
     /**
+     * 가격 차트 메인 지표
+     */
+    private val _chartMainIndicator: MutableLiveData<ChartMainIndicator> =
+        MutableLiveData(ChartMainIndicator.MOVING_AVERAGE)
+    val chartMainIndicator: LiveData<ChartMainIndicator> get() = _chartMainIndicator
+
+    /**
      * 차트 단위
      */
     private val _chartUnit: MutableLiveData<ChartUnit> = MutableLiveData(unitMinute)
@@ -93,6 +101,12 @@ class TransactionViewModel(
     fun setTransactionMethod(pTransactionMethod: TransactionMethod) {
         if (transactionMethod.value != pTransactionMethod) {
             _transactionMethod.value = pTransactionMethod
+        }
+    }
+
+    fun setChartMainIndicator(pChartMainIndicator: ChartMainIndicator) {
+        if (chartMainIndicator.value != pChartMainIndicator) {
+            _chartMainIndicator.value = pChartMainIndicator
         }
     }
 

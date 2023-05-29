@@ -31,4 +31,9 @@
         <item name="windowNoTitle">true</item>
     </style>
 
+    <style name="NoIconRadioButton" parent="Widget.AppCompat.CompoundButton.RadioButton">
+        <item name="buttonCompat">@null</item> <!-- Key! -->
+        <item name="android:button">@null</item>
+    </style>
+
 </resources>

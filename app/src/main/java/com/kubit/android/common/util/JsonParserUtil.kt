@@ -1,7 +1,9 @@
 package com.kubit.android.common.util
 
-import androidx.core.util.rangeTo
+import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.data.CandleEntry
+import com.github.mikephil.charting.data.Entry
+import com.kubit.android.R
 import com.kubit.android.model.data.chart.ChartDataWrapper
 import com.kubit.android.model.data.coin.CoinSnapshotData
 import com.kubit.android.model.data.coin.KubitCoinInfoData
@@ -325,6 +327,15 @@ class JsonParserUtil {
 
     fun getChartDataWrapper(jsonArray: JSONArray): ChartDataWrapper {
         val candleEntries: ArrayList<CandleEntry> = arrayListOf()
+        val transactionVolumeEntries: ArrayList<BarEntry> = arrayListOf()
+        val transactionVolumeColors: ArrayList<Int> = arrayListOf()
+
+        var transactionVolumeAvg5: Float = 0f
+        var transactionVolumeAvg10: Float = 0f
+        var transactionVolumeAvg20: Float = 0f
+        val transactionVolumeAvg5Entries: ArrayList<Entry> = arrayListOf()
+        val transactionVolumeAvg10Entries: ArrayList<Entry> = arrayListOf()
+        val transactionVolumeAvg20Entries: ArrayList<Entry> = arrayListOf()
 
         val length = jsonArray.length()
         for (idx in 1..length) {
@@ -347,15 +358,64 @@ class JsonParserUtil {
                             lowPrice.toFloat(),     // shadowL
                             openingPrice.toFloat(), // open
                             tradePrice.toFloat()    // close
-                        ).apply {
-                            DLog.d(TAG, "idx=$idx, candleEntry=$this")
-                        }
+                        )
                     )
+
+                    transactionVolumeEntries.add(
+                        BarEntry(
+                            idx.toFloat(),                  // x
+                            candleAccTradeVolume.toFloat()  // y
+                        )
+                    )
+
+                    transactionVolumeColors.add(
+                        if (openingPrice <= tradePrice) R.color.coin_red
+                        else R.color.coin_blue
+                    )
+
+                    transactionVolumeAvg5 += candleAccTradeVolume.toFloat()
+                    transactionVolumeAvg10 += candleAccTradeVolume.toFloat()
+                    transactionVolumeAvg20 += candleAccTradeVolume.toFloat()
+
+                    if (idx >= 5) {
+                        transactionVolumeAvg5Entries.add(
+                            Entry(
+                                idx.toFloat(),
+                                transactionVolumeAvg5 / 5f
+                            )
+                        )
+                        transactionVolumeAvg5 -= transactionVolumeEntries[idx - 4].y
+                    }
+                    if (idx >= 10) {
+                        transactionVolumeAvg10Entries.add(
+                            Entry(
+                                idx.toFloat(),
+                                transactionVolumeAvg10 / 10f
+                            )
+                        )
+                        transactionVolumeAvg10 -= transactionVolumeEntries[idx - 9].y
+                    }
+                    if (idx >= 20) {
+                        transactionVolumeAvg20Entries.add(
+                            Entry(
+                                idx.toFloat(),
+                                transactionVolumeAvg20 / 20f
+                            )
+                        )
+                        transactionVolumeAvg20 -= transactionVolumeEntries[idx - 19].y
+                    }
                 }
             }
         }
 
-        return ChartDataWrapper(candleEntries)
+        return ChartDataWrapper(
+            candleEntries,
+            transactionVolumeEntries,
+            transactionVolumeColors,
+            transactionVolumeAvg5Entries,
+            transactionVolumeAvg10Entries,
+            transactionVolumeAvg20Entries
+        )
     }
 
     companion object {

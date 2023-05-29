@@ -99,6 +99,13 @@
     <string name="chart_unitWeek">주</string>
     <string name="chart_unitMonth">월</string>
 
+    <string name="chartMainIndicatorSelector_movingAverage">이동평균선</string>
+    <string name="chartMainIndicatorSelector_bollingerBands">볼린져밴드</string>
+    <string name="chartMainIndicatorSelector_dailyBalanceTable">일목균형표</string>
+    <string name="chartMainIndicatorSelector_pivot">피봇</string>
+    <string name="chartMainIndicatorSelector_envelopes">Envelopes</string>
+    <string name="chartMainIndicatorSelector_priceChannels">Price Channels</string>
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

@@ -14,6 +14,8 @@
         android:layout_marginTop="10dp"
         android:layout_marginRight="15dp"
         android:background="@color/border"
+        android:clickable="true"
+        android:focusable="true"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -29,92 +31,96 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <TextView
-        android:id="@+id/tv_chart_unitMinute"
+    <RadioGroup
+        android:id="@+id/rg_chart_unit"
         android:layout_width="wrap_content"
-        android:layout_height="30dp"
-        android:background="@drawable/back_border_secondary"
-        android:fontFamily="@font/noto_sans_kr_regular"
-        android:gravity="center"
-        android:includeFontPadding="false"
-        android:letterSpacing="-0.05"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
-        android:text="@string/chart_unitMinute_3"
-        android:textColor="@color/secondary"
-        android:textSize="14dp"
-        app:layout_constraintBottom_toBottomOf="@id/cl_chart_setting"
-        app:layout_constraintRight_toLeftOf="@id/tv_chart_unitDay"
-        app:layout_constraintTop_toTopOf="@id/cl_chart_setting" />
-
-    <TextView
-        android:id="@+id/tv_chart_unitDay"
-        android:layout_width="wrap_content"
-        android:layout_height="30dp"
-        android:background="@drawable/back_border"
-        android:fontFamily="@font/noto_sans_kr_regular"
-        android:gravity="center"
-        android:includeFontPadding="false"
-        android:letterSpacing="-0.05"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
-        android:text="@string/chart_unitDay"
-        android:textColor="@color/text"
-        android:textSize="14dp"
-        app:layout_constraintBottom_toBottomOf="@id/cl_chart_setting"
-        app:layout_constraintRight_toLeftOf="@id/tv_chart_unitWeek"
-        app:layout_constraintTop_toTopOf="@id/cl_chart_setting" />
-
-    <TextView
-        android:id="@+id/tv_chart_unitWeek"
-        android:layout_width="wrap_content"
-        android:layout_height="30dp"
-        android:background="@drawable/back_border"
-        android:fontFamily="@font/noto_sans_kr_regular"
-        android:gravity="center"
-        android:includeFontPadding="false"
-        android:letterSpacing="-0.05"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
-        android:text="@string/chart_unitWeek"
-        android:textColor="@color/text"
-        android:textSize="14dp"
-        app:layout_constraintBottom_toBottomOf="@id/cl_chart_setting"
-        app:layout_constraintRight_toLeftOf="@id/tv_chart_unitMonth"
-        app:layout_constraintTop_toTopOf="@id/cl_chart_setting" />
-
-    <TextView
-        android:id="@+id/tv_chart_unitMonth"
-        android:layout_width="wrap_content"
-        android:layout_height="30dp"
-        android:layout_marginRight="15dp"
-        android:background="@drawable/back_border"
-        android:fontFamily="@font/noto_sans_kr_regular"
-        android:gravity="center"
-        android:includeFontPadding="false"
-        android:letterSpacing="-0.05"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
-        android:text="@string/chart_unitMonth"
-        android:textColor="@color/text"
-        android:textSize="14dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="@id/cl_chart_setting"
         app:layout_constraintRight_toLeftOf="@id/cl_chart_setting"
-        app:layout_constraintTop_toTopOf="@id/cl_chart_setting" />
+        app:layout_constraintTop_toTopOf="@id/cl_chart_setting">
+
+        <RadioButton
+            android:id="@+id/rb_chart_unitMinute"
+            style="@style/NoIconRadioButton"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:background="@drawable/back_chart_unit_button"
+            android:checked="true"
+            android:fontFamily="@font/noto_sans_kr_regular"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:letterSpacing="-0.05"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:text="@string/chart_unitMinute_3"
+            android:textColor="@color/color_chart_unit_selector"
+            android:textSize="14dp" />
+
+        <RadioButton
+            android:id="@+id/rb_chart_unitDay"
+            style="@style/NoIconRadioButton"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:background="@drawable/back_chart_unit_button"
+            android:fontFamily="@font/noto_sans_kr_regular"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:letterSpacing="-0.05"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:text="@string/chart_unitDay"
+            android:textColor="@color/color_chart_unit_selector"
+            android:textSize="14dp" />
+
+        <RadioButton
+            android:id="@+id/rb_chart_unitWeek"
+            style="@style/NoIconRadioButton"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:background="@drawable/back_chart_unit_button"
+            android:fontFamily="@font/noto_sans_kr_regular"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:letterSpacing="-0.05"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:text="@string/chart_unitWeek"
+            android:textColor="@color/color_chart_unit_selector"
+            android:textSize="14dp" />
+
+        <RadioButton
+            android:id="@+id/rb_chart_unitMonth"
+            style="@style/NoIconRadioButton"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:layout_marginRight="15dp"
+            android:background="@drawable/back_chart_unit_button"
+            android:fontFamily="@font/noto_sans_kr_regular"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:letterSpacing="-0.05"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:text="@string/chart_unitMonth"
+            android:textColor="@color/color_chart_unit_selector"
+            android:textSize="14dp" />
+
+    </RadioGroup>
 
     <com.github.mikephil.charting.charts.CombinedChart
         android:id="@+id/chart_price"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="10dp"
-        app:layout_constraintBottom_toTopOf="@id/chart_volume"
+        app:layout_constraintBottom_toTopOf="@id/chart_transactionVolume"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/cl_chart_setting"
         app:layout_constraintVertical_weight="5" />
 
     <com.github.mikephil.charting.charts.CombinedChart
-        android:id="@+id/chart_volume"
+        android:id="@+id/chart_transactionVolume"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
