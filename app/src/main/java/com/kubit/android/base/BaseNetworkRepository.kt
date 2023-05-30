@@ -2,6 +2,7 @@ package com.kubit.android.base
 
 import android.app.Application
 import com.kubit.android.common.util.DLog
+import org.json.JSONObject
 import java.io.BufferedInputStream
 import java.io.BufferedReader
 import java.io.BufferedWriter
@@ -90,6 +91,67 @@ open class BaseNetworkRepository(
         return message
     }
 
+    protected fun sendRequestToKubitServer(
+        strUrl: String,
+        hsParams: HashMap<String, String>,
+        urlState: String,
+        authorization: String = ""
+    ): String {
+        val connection: HttpURLConnection
+        var message: String = ""
+        try {
+            val url: URL =
+                if (urlState == "GET") URL("${strUrl}?${getParams(hsParams)}") else URL(strUrl)
+
+            DLog.d(TAG, "strUrl=$strUrl")
+            DLog.d(TAG, "hsParams=$hsParams")
+            // Https Protocol Check
+            connection = if (url.protocol == "https") {
+                trustAllHosts()
+                val https = url.openConnection() as HttpsURLConnection
+                https.hostnameVerifier = DO_NOT_VERIFY
+                https
+            } else {
+                url.openConnection() as HttpURLConnection
+            }
+
+            connection.apply {
+                readTimeout = TIME_OUT
+                connectTimeout = TIME_OUT
+                requestMethod = urlState
+                setRequestProperty("Accept", "application/json")
+                setRequestProperty("Content-Type", "application/json")
+
+                if (authorization.isNotEmpty()) {
+                    setRequestProperty("Authorization", authorization)
+                }
+            }
+
+            connection.doOutput = true
+
+            val os = connection.outputStream
+            val writer = BufferedWriter(OutputStreamWriter(os, "UTF-8"))
+
+            val jsonParams = getParamsToJson(hsParams)
+            writer.write(jsonParams)
+
+            writer.flush()
+            writer.close()
+
+            os.flush()
+            os.close()
+
+            val bis = BufferedInputStream(connection.inputStream)
+            message = getMessage(bis)
+
+        } catch (e: Exception) {
+            DLog.e(TAG, "msg=${e.message}", e)
+            message = ""
+        }
+
+        return message
+    }
+
     private fun getMessage(inputStream: InputStream?): String {
         val builder = java.lang.StringBuilder()
         var reader: BufferedReader? = null
@@ -130,8 +192,21 @@ open class BaseNetworkRepository(
         return sb.toString()
     }
 
+    private fun getParamsToJson(hsParams: HashMap<String, String>): String {
+        val jsonObj = JSONObject()
+
+        val iterator = hsParams.entries.iterator()
+        while (iterator.hasNext()) {
+            val entry = iterator.next()
+            jsonObj.put(entry.key, entry.value)
+        }
+
+        return jsonObj.toString()
+    }
+
     companion object {
         const val UPBIT_API_HOST_URL: String = "https://api.upbit.com/v1/"
+        const val KUBIT_API_HOST_URL: String = "http://34.22.76.81:8080/api/v1/"
 
         const val POST: String = "POST"
         const val GET: String = "GET"

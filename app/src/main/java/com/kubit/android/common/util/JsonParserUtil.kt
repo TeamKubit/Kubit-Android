@@ -8,7 +8,9 @@ import com.kubit.android.model.data.chart.ChartDataWrapper
 import com.kubit.android.model.data.coin.CoinSnapshotData
 import com.kubit.android.model.data.coin.KubitCoinInfoData
 import com.kubit.android.model.data.coin.PriceChangeType
+import com.kubit.android.model.data.login.LoginSessionData
 import com.kubit.android.model.data.market.KubitMarketData
+import com.kubit.android.model.data.network.NetworkResult
 import com.kubit.android.model.data.orderbook.OrderBookData
 import com.kubit.android.model.data.orderbook.OrderBookUnitData
 import com.kubit.android.model.data.transaction.TransactionType
@@ -418,6 +420,37 @@ class JsonParserUtil {
         )
     }
 
+    fun getLoginSessionData(jsonRoot: JSONObject): NetworkResult<LoginSessionData> {
+        val resultCode = getInt(jsonRoot, KEY_RESULT_CODE)
+        val resultMsg = getString(jsonRoot, KEY_RESULT_MSG)
+
+        if (resultCode != 200) {
+            return NetworkResult.Fail(resultMsg)
+        }
+
+        val detailObj = getJsonObject(jsonRoot, KEY_DETAIL)
+        return if (detailObj != null) {
+            val tokenInfoObj = getJsonObject(detailObj, KEY_TOKEN_INFO)
+
+            if (tokenInfoObj != null) {
+                val grantType = getString(tokenInfoObj, KEY_GRANT_TYPE)
+                val accessToken = getString(tokenInfoObj, KEY_ACCESS_TOKEN)
+                val refreshToken = getString(tokenInfoObj, KEY_REFRESH_TOKEN)
+                val userName = getString(detailObj, KEY_USERNAME)
+
+                NetworkResult.Success(
+                    LoginSessionData(
+                        userName, grantType, accessToken, refreshToken
+                    )
+                )
+            } else {
+                NetworkResult.Fail(resultMsg)
+            }
+        } else {
+            NetworkResult.Fail(resultMsg)
+        }
+    }
+
     companion object {
         private const val TAG: String = "JsonParserUtil"
 
@@ -464,6 +497,15 @@ class JsonParserUtil {
         private const val KEY_CANDLE_DATE_TIME_KST: String = "candle_date_time_kst"
         private const val KEY_CANDLE_ACC_TRADE_PRICE: String = "candle_acc_trade_price"
         private const val KEY_CANDLE_ACC_TRADE_VOLUME: String = "candle_acc_trade_volume"
+
+        private const val KEY_RESULT_CODE: String = "result_code"
+        private const val KEY_RESULT_MSG: String = "result_msg"
+        private const val KEY_DETAIL: String = "detail"
+        private const val KEY_TOKEN_INFO: String = "tokenInfo"
+        private const val KEY_GRANT_TYPE: String = "grant_type"
+        private const val KEY_ACCESS_TOKEN: String = "accessToken"
+        private const val KEY_REFRESH_TOKEN: String = "refreshToken"
+        private const val KEY_USERNAME: String = "username"
     }
 
 }

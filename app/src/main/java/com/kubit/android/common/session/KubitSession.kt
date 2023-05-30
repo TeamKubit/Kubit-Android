@@ -3,6 +3,7 @@ package com.kubit.android.common.session
 import android.content.Context
 import android.content.SharedPreferences
 import com.kubit.android.common.util.DLog
+import com.kubit.android.model.data.login.LoginSessionData
 
 object KubitSession {
 
@@ -18,6 +19,21 @@ object KubitSession {
         _editor = sharedPreferences.edit()
     }
 
+    fun createLoginSession(
+        pUserID: String,
+        pUserPW: String,
+        pLoginSessionData: LoginSessionData
+    ) {
+        createLoginSession(
+            pUserID,
+            pUserPW,
+            pLoginSessionData.userName,
+            pLoginSessionData.grantType,
+            pLoginSessionData.accessToken,
+            pLoginSessionData.refreshToken
+        )
+    }
+
     /**
      * 로그인 세션을 만드는 함수
      *
@@ -26,6 +42,7 @@ object KubitSession {
      * @param pUserID           사용자 계정 아이디
      * @param pUserPW           사용자 계정 비밀번호
      * @param pUserName         사용자 계정 닉네임
+     * @param pGrantType        ?
      * @param pAccessToken      AWS Access Token
      * @param pRefreshToken     AWS Refresh Token
      */
@@ -33,6 +50,7 @@ object KubitSession {
         pUserID: String,
         pUserPW: String,
         pUserName: String,
+        pGrantType: String,
         pAccessToken: String,
         pRefreshToken: String
     ) {
@@ -40,6 +58,7 @@ object KubitSession {
         editor.putString(USER_ID, pUserID)
         editor.putString(USER_PW, pUserPW)
         editor.putString(USER_NAME, pUserName)
+        editor.putString(GRANT_TYPE, pGrantType)
         editor.putString(ACCESS_TOKEN, pAccessToken)
         editor.putString(REFRESH_TOKEN, pRefreshToken)
         editor.commit()
@@ -48,13 +67,16 @@ object KubitSession {
     /**
      * AccessToken이 만료되었을 때, 새로운 Token을 받아온 후에 저장할 때 사용하는 함수
      *
+     * @param pGrantType        ?
      * @param pAccessToken      AWS Access Token
      * @param pRefreshToken     AWS Refresh Token
      */
     fun updateLoginSession(
+        pGrantType: String,
         pAccessToken: String,
         pRefreshToken: String
     ) {
+        editor.putString(GRANT_TYPE, pGrantType)
         editor.putString(ACCESS_TOKEN, pAccessToken)
         editor.putString(REFRESH_TOKEN, pRefreshToken)
         editor.commit()
@@ -72,6 +94,7 @@ object KubitSession {
     private const val USER_ID: String = "user_id"
     private const val USER_PW: String = "user_pw"
     private const val USER_NAME: String = "user_name"
+    private const val GRANT_TYPE: String = "grant_type"
     private const val ACCESS_TOKEN: String = "access_token"
     private const val REFRESH_TOKEN: String = "refresh_token"
 

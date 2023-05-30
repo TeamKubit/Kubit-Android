@@ -11,10 +11,12 @@ import com.kubit.android.R
 import com.kubit.android.base.BaseActivity
 import com.kubit.android.base.BaseViewModel
 import com.kubit.android.coinlist.view.CoinListFragment
+import com.kubit.android.common.session.KubitSession
 import com.kubit.android.common.util.DLog
 import com.kubit.android.databinding.ActivityMainBinding
 import com.kubit.android.exchange.view.ExchangeFragment
 import com.kubit.android.investment.view.InvestmentFragment
+import com.kubit.android.login.view.LoginActivity
 import com.kubit.android.main.viewmodel.MainViewModel
 import com.kubit.android.model.data.market.KubitMarketData
 import com.kubit.android.model.data.route.KubitTabRouter
@@ -131,10 +133,18 @@ class MainActivity : BaseActivity() {
         model.selectedCoinData.observe(this, Observer { selectedCoinData ->
             DLog.d(TAG, "selectedCoinData=$selectedCoinData")
             if (selectedCoinData != null) {
-                val transactionIntent = Intent(this, TransactionActivity::class.java).apply {
-                    putExtra("selected_coin_data", selectedCoinData)
+                // 로그인한 경우 -> 거래 화면으로 전환
+                if (KubitSession.isLogin()) {
+                    val transactionIntent = Intent(this, TransactionActivity::class.java).apply {
+                        putExtra("selected_coin_data", selectedCoinData)
+                    }
+                    transactionIntentForResult.launch(transactionIntent)
                 }
-                transactionIntentForResult.launch(transactionIntent)
+                // 로그인하지 않은 경우 -> 로그인 화면으로 전환
+                else {
+                    val loginIntent = Intent(this, LoginActivity::class.java)
+                    loginIntentForResult.launch(loginIntent)
+                }
             }
         })
     }
@@ -188,6 +198,19 @@ class MainActivity : BaseActivity() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             model.setSelectedCoinData(null)
 
+            when (result.resultCode) {
+                RESULT_OK -> {
+
+                }
+
+                else -> {
+
+                }
+            }
+        }
+
+    private val loginIntentForResult =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             when (result.resultCode) {
                 RESULT_OK -> {
 
