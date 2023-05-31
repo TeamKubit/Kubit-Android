@@ -12,7 +12,6 @@ import com.kubit.android.R
 import com.kubit.android.common.util.ConvertUtil
 import com.kubit.android.databinding.DialogKubitMessageBinding
 
-
 class MessageDialog : DialogFragment {
 
     private var _binding: DialogKubitMessageBinding? = null
