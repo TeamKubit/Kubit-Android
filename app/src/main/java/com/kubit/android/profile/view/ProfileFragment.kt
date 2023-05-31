@@ -6,6 +6,9 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultCallback
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.activityViewModels
@@ -25,9 +28,27 @@ class ProfileFragment : BaseFragment() {
     private var _binding: FragmentProfileBinding? = null
     private val binding: FragmentProfileBinding get() = _binding!!
 
+
+    private var _loginIntentForResult: ActivityResultLauncher<Intent>? = null
+    private val loginIntentForResult: ActivityResultLauncher<Intent> get() = _loginIntentForResult!!
+
     // region Fragment LifeCycle
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        _loginIntentForResult =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                when (result.resultCode) {
+                    AppCompatActivity.RESULT_OK -> {
+                        applyLoginSession()
+                    }
+
+                    else -> {
+
+                    }
+                }
+            }
+
         arguments?.let {
         }
     }
@@ -46,6 +67,7 @@ class ProfileFragment : BaseFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        _loginIntentForResult = null
     }
     // endregion Fragment LifeCycle
 
@@ -136,19 +158,6 @@ class ProfileFragment : BaseFragment() {
         ).show(childFragmentManager, MessageDialog.TAG)
     }
     // endregion Dialog
-
-    private val loginIntentForResult =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            when (result.resultCode) {
-                AppCompatActivity.RESULT_OK -> {
-                    applyLoginSession()
-                }
-
-                else -> {
-
-                }
-            }
-        }
 
     companion object {
         const val TAG: String = "ProfileFragment"
