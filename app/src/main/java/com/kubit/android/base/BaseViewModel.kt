@@ -9,7 +9,7 @@ import com.kubit.android.intro.viewmodel.IntroViewModel
 import com.kubit.android.login.viewmodel.LoginViewModel
 import com.kubit.android.main.viewmodel.MainViewModel
 import com.kubit.android.model.repository.IntroRepository
-import com.kubit.android.model.repository.LoginRepository
+import com.kubit.android.model.repository.KubitRepository
 import com.kubit.android.model.repository.TransactionRepository
 import com.kubit.android.model.repository.UpbitRepository
 import com.kubit.android.transaction.viewmodel.TransactionViewModel
@@ -56,7 +56,8 @@ open class BaseViewModel : ViewModel() {
             // Intro Activity ViewModel
             if (modelClass.isAssignableFrom(IntroViewModel::class.java)) {
                 return IntroViewModel(
-                    IntroRepository(application)
+                    IntroRepository(application),
+                    KubitRepository(application)
                 ) as T
             }
             // Main Activity ViewModel
@@ -74,7 +75,7 @@ open class BaseViewModel : ViewModel() {
             // Login Activity ViewModel
             else if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
                 return LoginViewModel(
-                    LoginRepository(application)
+                    KubitRepository(application)
                 ) as T
             }
             // 식별되지 않은 ViewModel

@@ -9,11 +9,11 @@ import com.kubit.android.common.util.DLog
 import com.kubit.android.model.data.login.LoginResult
 import com.kubit.android.model.data.login.LoginSessionData
 import com.kubit.android.model.data.network.NetworkResult
-import com.kubit.android.model.repository.LoginRepository
+import com.kubit.android.model.repository.KubitRepository
 import kotlinx.coroutines.launch
 
 class LoginViewModel(
-    private val loginRepository: LoginRepository
+    private val kubitRepository: KubitRepository
 ) : BaseViewModel() {
 
     private val _loginResult: MutableLiveData<LoginResult?> = MutableLiveData(null)
@@ -37,7 +37,7 @@ class LoginViewModel(
     fun requestLogin() {
         setProgressFlag(true)
         viewModelScope.launch {
-            when (val result = loginRepository.makeLoginRequest(userID, userPW)) {
+            when (val result = kubitRepository.makeLoginRequest(userID, userPW)) {
                 is NetworkResult.Success<LoginSessionData> -> {
                     val data = result.data
                     DLog.d(TAG, "loginSessionData=$data")

@@ -4,16 +4,20 @@ import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.data.CandleEntry
 import com.github.mikephil.charting.data.Entry
 import com.kubit.android.R
+import com.kubit.android.common.session.KubitSession
 import com.kubit.android.model.data.chart.ChartDataWrapper
 import com.kubit.android.model.data.coin.CoinSnapshotData
 import com.kubit.android.model.data.coin.KubitCoinInfoData
 import com.kubit.android.model.data.coin.PriceChangeType
 import com.kubit.android.model.data.login.LoginSessionData
 import com.kubit.android.model.data.market.KubitMarketData
+import com.kubit.android.model.data.network.KubitNetworkResult
 import com.kubit.android.model.data.network.NetworkResult
 import com.kubit.android.model.data.orderbook.OrderBookData
 import com.kubit.android.model.data.orderbook.OrderBookUnitData
 import com.kubit.android.model.data.transaction.TransactionType
+import com.kubit.android.model.data.wallet.WalletData
+import com.kubit.android.model.data.wallet.WalletOverall
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -451,6 +455,55 @@ class JsonParserUtil {
         }
     }
 
+    fun getWalletOverallData(jsonRoot: JSONObject): KubitNetworkResult<WalletOverall> {
+        val resultCode = getInt(jsonRoot, KEY_RESULT_CODE)
+        val resultMsg = getString(jsonRoot, KEY_RESULT_MSG)
+
+        // Token 유효기간 만료
+        if (resultCode == 403) {
+            return KubitNetworkResult.Refresh(KubitSession.refreshToken)
+        }
+        // 그 외의 오류
+        else if (resultCode != 200) {
+            return KubitNetworkResult.Fail(resultMsg)
+        }
+
+        val detailObj = getJsonObject(jsonRoot, KEY_DETAIL)
+        return if (detailObj != null) {
+            val krw = getDouble(detailObj, KEY_MONEY)
+            val walletArray = getJSONArray(detailObj, KEY_WALLET)
+
+            val walletList: ArrayList<WalletData> = arrayListOf()
+            if (walletArray != null) {
+                for (idx in 0 until walletArray.length()) {
+                    if (!walletArray.isNull(idx)) {
+                        val obj = walletArray.getJSONObject(idx)
+
+                        if (obj != null) {
+                            val market = getString(obj, KEY_MARKET_CODE)
+                            val quantityAvailable = getDouble(obj, KEY_QUANTITY_AVAILABLE)
+                            val quantity = getDouble(obj, KEY_QUANTITY)
+                            val totalPrice = getDouble(obj, KEY_TOTAL_PRICE)
+
+                            walletList.add(
+                                WalletData(
+                                    market,
+                                    quantityAvailable,
+                                    quantity,
+                                    totalPrice
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+
+            KubitNetworkResult.Success(WalletOverall(krw, walletList))
+        } else {
+            KubitNetworkResult.Fail(resultMsg)
+        }
+    }
+
     companion object {
         private const val TAG: String = "JsonParserUtil"
 
@@ -502,10 +555,17 @@ class JsonParserUtil {
         private const val KEY_RESULT_MSG: String = "result_msg"
         private const val KEY_DETAIL: String = "detail"
         private const val KEY_TOKEN_INFO: String = "tokenInfo"
-        private const val KEY_GRANT_TYPE: String = "grant_type"
+        private const val KEY_GRANT_TYPE: String = "grantType"
         private const val KEY_ACCESS_TOKEN: String = "accessToken"
         private const val KEY_REFRESH_TOKEN: String = "refreshToken"
         private const val KEY_USERNAME: String = "username"
+
+        private const val KEY_MONEY: String = "money"
+        private const val KEY_WALLET: String = "wallet"
+        private const val KEY_MARKET_CODE: String = "marketCode"
+        private const val KEY_QUANTITY_AVAILABLE: String = "quantityAvailable"
+        private const val KEY_QUANTITY: String = "quantity"
+        private const val KEY_TOTAL_PRICE: String = "totalPrice"
     }
 
 }

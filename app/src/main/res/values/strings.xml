@@ -4,8 +4,11 @@
 
     <string name="dialog_msg_001">잠시만 기다려 주세요.</string>
     <string name="dialog_msg_002">네트워크 연결이 필요합니다.\n네트워크 연결 후에 다시 실행해주세요.</string>
+    <string name="dialog_msg_003">정말 로그아웃 하시겠습니까?</string>
+    <string name="dialog_msg_004">한 번 초기화한 데이터는 다시 복구할 수 없습니다. \n정말 초기화 하시겠습니까?</string>
     <string name="toast_msg_error_001">예기치 못한 오류가 발생했습니다. 잠시 후에 다시 시도해 주세요.</string>
-    <string name="toast_msg_login_success">로그인이 완료되었습니다.</string>
+    <string name="toast_msg_login_success">로그인 되었습니다.</string>
+    <string name="toast_msg_logout_success">로그아웃 되었습니다.</string>
     <string name="toast_msg_login_fail">ID 또는 PW를 확인해 주세요.</string>
     <string name="api_connection_fail_msg">서버로부터 응답이 없습니다. 잠시 후에 다시 시도해 주세요.</string>
 

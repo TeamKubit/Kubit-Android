@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.kubit.android.common.util.DLog
 import com.kubit.android.model.data.login.LoginSessionData
+import com.kubit.android.model.data.wallet.WalletData
 
 object KubitSession {
 
@@ -12,6 +13,18 @@ object KubitSession {
 
     private var _editor: SharedPreferences.Editor? = null
     private val editor: SharedPreferences.Editor get() = _editor!!
+
+    /**
+     * 원화 금액
+     */
+    private var _KRW: Double = 0.0
+    val KRW: Double get() = _KRW
+
+    /**
+     * 보유 코인 리스트
+     */
+    private var _walletList: ArrayList<WalletData> = arrayListOf()
+    val walletList: List<WalletData> get() = _walletList
 
     fun init(pContext: Context) {
         DLog.d(TAG, "init KubitSession!")
@@ -54,6 +67,7 @@ object KubitSession {
         pAccessToken: String,
         pRefreshToken: String
     ) {
+        DLog.d(TAG, "pUserName=$pUserName")
         editor.putBoolean(IS_LOGIN, true)
         editor.putString(USER_ID, pUserID)
         editor.putString(USER_PW, pUserPW)
@@ -83,9 +97,43 @@ object KubitSession {
     }
 
     /**
+     * 로그아웃 시, 호출하는 함수
+     */
+    fun logout() {
+        editor.clear()
+        editor.commit()
+        _KRW = 0.0
+        _walletList.clear()
+    }
+
+    /**
+     * 로그인 후, 보유 자산 데이터를 서버로부터 가져온 후에 호출하는 함수
+     *
+     * @param pKRW          원화 금액
+     * @param pWalletList   보유 코인 리스트
+     */
+    fun setWalletOverall(pKRW: Double, pWalletList: List<WalletData>) {
+        _KRW = pKRW
+        _walletList.clear()
+        _walletList.addAll(pWalletList)
+    }
+
+    /**
      * 로그인 했는지 여부를 반환하는 함수
      */
     fun isLogin(): Boolean = sharedPreferences.getBoolean(IS_LOGIN, false)
+
+    val userID: String get() = sharedPreferences.getString(USER_ID, "") ?: ""
+
+    val userPW: String get() = sharedPreferences.getString(USER_PW, "") ?: ""
+
+    val userName: String get() = sharedPreferences.getString(USER_NAME, "") ?: ""
+
+    val grantType: String get() = sharedPreferences.getString(GRANT_TYPE, "") ?: ""
+
+    val accessToken: String get() = sharedPreferences.getString(ACCESS_TOKEN, "") ?: ""
+
+    val refreshToken: String get() = sharedPreferences.getString(REFRESH_TOKEN, "") ?: ""
 
     private const val TAG: String = "KubitSession"
     private const val LOGIN_PREF_NAME: String = "kubit"

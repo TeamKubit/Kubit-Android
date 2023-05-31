@@ -8,10 +8,13 @@ import com.kubit.android.R
 import com.kubit.android.base.BaseActivity
 import com.kubit.android.base.BaseViewModel
 import com.kubit.android.common.dialog.MessageDialog
+import com.kubit.android.common.session.KubitSession
+import com.kubit.android.common.util.DLog
 import com.kubit.android.common.util.NetworkUtil
 import com.kubit.android.databinding.ActivityIntroBinding
 import com.kubit.android.intro.viewmodel.IntroViewModel
 import com.kubit.android.main.view.MainActivity
+import com.kubit.android.model.data.login.LoginResult
 
 class IntroActivity : BaseActivity() {
 
@@ -32,6 +35,11 @@ class IntroActivity : BaseActivity() {
 
         setObserver()
         init()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        dismissProgress()
     }
     // endregion Activity LifeCycle
 
@@ -58,11 +66,38 @@ class IntroActivity : BaseActivity() {
 
         model.marketData.observe(this, Observer { marketData ->
             if (marketData != null) {
-                val mainIntent = Intent(this, MainActivity::class.java).apply {
-                    putExtra("market_data", marketData)
+                if (KubitSession.isLogin()) {
+                    model.requestLogin()
+                } else {
+                    finish(pChangeToMainActivity = true)
                 }
-                startActivity(mainIntent)
-                finish()
+            }
+        })
+
+        model.loginResult.observe(this, Observer { loginResult ->
+            if (loginResult != null) {
+                when (loginResult) {
+                    LoginResult.SUCCESS -> {
+                        model.requestWalletOverall()
+                    }
+
+                    LoginResult.FAIL,
+                    LoginResult.ERROR -> {
+                        model.setProgressFlag(false)
+                        KubitSession.logout()
+                        finish(pChangeToMainActivity = true)
+                    }
+                }
+            }
+        })
+
+        model.walletRequestResult.observe(this, Observer { result ->
+            if (result != null) {
+                if (result) {
+                    finish(pChangeToMainActivity = true)
+                } else {
+                    showWalletOverallFailDialog()
+                }
             }
         })
     }
@@ -75,6 +110,18 @@ class IntroActivity : BaseActivity() {
         }
     }
 
+    private fun finish(pChangeToMainActivity: Boolean) {
+        if (pChangeToMainActivity) {
+            model.marketData.value?.let { marketData ->
+                val mainIntent = Intent(this, MainActivity::class.java).apply {
+                    putExtra("market_data", marketData)
+                }
+                startActivity(mainIntent)
+            }
+        }
+        super.finish()
+    }
+
     // region Dialog
     private fun showNetworkDialog() {
         for (fragment in supportFragmentManager.fragments) {
@@ -83,8 +130,21 @@ class IntroActivity : BaseActivity() {
             }
         }
 
-        MessageDialog(resources.getString(R.string.dialog_msg_002)) { finish() }
-            .show(supportFragmentManager, MessageDialog.TAG)
+        MessageDialog(resources.getString(R.string.dialog_msg_002)) {
+            finish(pChangeToMainActivity = false)
+        }.show(supportFragmentManager, MessageDialog.TAG)
+    }
+
+    private fun showWalletOverallFailDialog() {
+        for (fragment in supportFragmentManager.fragments) {
+            if (fragment is MessageDialog) {
+                return
+            }
+        }
+
+        MessageDialog(getString(R.string.toast_msg_error_001)) {
+            finish(pChangeToMainActivity = false)
+        }.show(supportFragmentManager, MessageDialog.TAG)
     }
     // endregion Dialog
 

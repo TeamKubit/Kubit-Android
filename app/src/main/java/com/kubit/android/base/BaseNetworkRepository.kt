@@ -127,19 +127,21 @@ open class BaseNetworkRepository(
                 }
             }
 
-            connection.doOutput = true
+            if (hsParams.isNotEmpty()) {
+                connection.doOutput = true
 
-            val os = connection.outputStream
-            val writer = BufferedWriter(OutputStreamWriter(os, "UTF-8"))
+                val os = connection.outputStream
+                val writer = BufferedWriter(OutputStreamWriter(os, "UTF-8"))
 
-            val jsonParams = getParamsToJson(hsParams)
-            writer.write(jsonParams)
+                val jsonParams = getParamsToJson(hsParams)
+                writer.write(jsonParams)
 
-            writer.flush()
-            writer.close()
+                writer.flush()
+                writer.close()
 
-            os.flush()
-            os.close()
+                os.flush()
+                os.close()
+            }
 
             val bis = BufferedInputStream(connection.inputStream)
             message = getMessage(bis)
