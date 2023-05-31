@@ -67,6 +67,7 @@ class ProfileFragment : BaseFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        loginIntentForResult.unregister()
         _loginIntentForResult = null
     }
     // endregion Fragment LifeCycle

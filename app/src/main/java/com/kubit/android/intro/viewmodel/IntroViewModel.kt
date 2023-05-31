@@ -112,6 +112,7 @@ class IntroViewModel(
                 is KubitNetworkResult.Success<WalletOverall> -> {
                     val data = result.data
                     DLog.d(TAG, "walletOverall=$data")
+                    KubitSession.setWalletOverall(data.KRW, data.walletList)
                     _walletRequestResult.postValue(true)
                 }
 

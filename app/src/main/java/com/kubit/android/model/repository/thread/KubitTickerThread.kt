@@ -4,6 +4,7 @@ import com.kubit.android.common.util.DLog
 import com.kubit.android.common.util.JsonParserUtil
 import com.kubit.android.model.data.coin.CoinSnapshotData
 import com.kubit.android.model.data.coin.KubitCoinInfoData
+import com.kubit.android.model.data.wallet.WalletData
 import org.json.JSONArray
 import org.json.JSONException
 
@@ -58,13 +59,14 @@ class KubitTickerThread : BaseNetworkThread {
             put("markets", sb.toString())
         }
 
-        if (hsParams.isNotEmpty()) {
+        if (coinInfoDataList.isNotEmpty()) {
             while (isActive) {
                 val data = sendRequest(UPBIT_API_TICKER_URL, hsParams, GET)
 
                 try {
                     val jsonRoot = JSONArray(data)
-                    val result = jsonParserUtil.getCoinSnapshotDataList(jsonRoot, coinInfoDataList)
+                    val result =
+                        jsonParserUtil.getCoinSnapshotDataList(jsonRoot, coinInfoDataList)
 
                     if (result.isNotEmpty()) {
                         onSuccessListener(result)
@@ -74,11 +76,9 @@ class KubitTickerThread : BaseNetworkThread {
                 } catch (e: JSONException) {
                     onErrorListener(e)
                 }
-
-                sleep(SLEEP_TIME)
             }
         } else {
-            DLog.e(TAG, "coinInfoDataList=$coinInfoDataList is empty!")
+            onSuccessListener(listOf())
         }
     }
 
@@ -87,6 +87,27 @@ class KubitTickerThread : BaseNetworkThread {
 
         private const val UPBIT_API_TICKER_URL = "${UPBIT_API_HOST_URL}ticker"
         private const val SLEEP_TIME: Long = 500
+
+        fun create(
+            userWalletList: List<WalletData>,
+            onSuccessListener: (snapshotDataList: List<CoinSnapshotData>) -> Unit,
+            onFailListener: (failMsg: String) -> Unit,
+            onErrorListener: (e: Exception) -> Unit
+        ): KubitTickerThread {
+            val coinList = arrayListOf<KubitCoinInfoData>().apply {
+                for (wallet in userWalletList) {
+                    add(
+                        KubitCoinInfoData(
+                            market = wallet.market,
+                            marketCode = "",
+                            nameKor = "",
+                            nameEng = ""
+                        )
+                    )
+                }
+            }
+            return KubitTickerThread(coinList, onSuccessListener, onFailListener, onErrorListener)
+        }
     }
 
 }

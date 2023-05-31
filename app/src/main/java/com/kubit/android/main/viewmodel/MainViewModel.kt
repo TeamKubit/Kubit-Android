@@ -3,11 +3,17 @@ package com.kubit.android.main.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.github.mikephil.charting.data.PieEntry
 import com.kubit.android.base.BaseViewModel
 import com.kubit.android.common.session.KubitSession
 import com.kubit.android.common.util.DLog
 import com.kubit.android.model.data.coin.CoinSnapshotData
 import com.kubit.android.model.data.coin.KubitCoinInfoData
+import com.kubit.android.model.data.investment.InvestmentAssetData
+import com.kubit.android.model.data.investment.InvestmentData
+import com.kubit.android.model.data.investment.InvestmentNotYetData
+import com.kubit.android.model.data.investment.InvestmentRecordData
+import com.kubit.android.model.data.investment.InvestmentWalletData
 import com.kubit.android.model.data.market.KubitMarketCode
 import com.kubit.android.model.data.market.KubitMarketData
 import com.kubit.android.model.data.route.KubitTabRouter
@@ -46,6 +52,12 @@ class MainViewModel(
     private val _filterdCoinSnapshotDataList: MutableLiveData<List<CoinSnapshotData>> =
         MutableLiveData(listOf())
     val filteredCoinSnapshotDataList: LiveData<List<CoinSnapshotData>> get() = _filterdCoinSnapshotDataList
+
+    /**
+     * 보유자산 화면에 보여줄 데이터
+     */
+    private val _investmentAssetData: MutableLiveData<InvestmentData?> = MutableLiveData(null)
+    val investmentAssetData: LiveData<InvestmentData?> get() = _investmentAssetData
 
     fun initMarketData(pMarketData: KubitMarketData) {
         marketData = pMarketData
@@ -106,9 +118,141 @@ class MainViewModel(
     }
 
     fun stopTickerData() {
-        DLog.d(TAG, "stopTickerData() is called")
+        DLog.d(TAG, "stopTickerData() is called!")
         viewModelScope.launch {
             upbitRepository.stopCoinTickerThread()
+        }
+    }
+
+    fun requestInvestmentTickerData() {
+        DLog.d(TAG, "requestInvestmentTickerData() is called!")
+        viewModelScope.launch {
+            upbitRepository.makeInvestmentTickerThread(
+                pWalletDataList = KubitSession.walletList,
+                onSuccessListener = { snapshotDataList ->
+                    DLog.d(TAG, "walletSnapshotDataList=$snapshotDataList")
+                    val krw = KubitSession.KRW
+                    val walletList = KubitSession.walletList
+
+                    var totalAsset: Double = krw
+                    var totalBidPrice: Double = 0.0
+                    var totalValuation: Double = 0.0
+
+                    val userWalletList: ArrayList<InvestmentWalletData> = arrayListOf()
+                    for (idx in walletList.indices) {
+                        if (idx in snapshotDataList.indices) {
+                            val wallet = walletList[idx]
+                            val snapshotData = snapshotDataList[idx]
+
+                            val valuationPrice = wallet.quantity * snapshotData.tradePrice
+                            val earningRate =
+                                (wallet.totalPrice - valuationPrice) / wallet.totalPrice
+
+                            totalAsset += valuationPrice
+                            totalValuation += valuationPrice
+                            totalBidPrice += wallet.totalPrice
+
+                            userWalletList.add(
+                                InvestmentWalletData(
+                                    market = snapshotData.market,
+                                    nameKor = snapshotData.nameKor,
+                                    nameEng = snapshotData.nameEng,
+                                    changeValuation = snapshotData.signedChangePrice,
+                                    earningRate = earningRate,
+                                    quantity = wallet.quantity,
+                                    bidAvgPrice = wallet.bidAvgPrice,
+                                    valuationPrice = valuationPrice,
+                                    askTotalPrice = wallet.totalPrice
+                                )
+                            )
+                        }
+                    }
+
+                    val sortedUserWalletList = arrayListOf<InvestmentWalletData>().apply {
+                        addAll(userWalletList)
+                    }
+                    sortedUserWalletList.sortWith { wallet1, wallet2 ->
+                        wallet2.valuationPrice.compareTo(wallet1.valuationPrice)
+                    }
+                    val portfolioList: ArrayList<PieEntry> = arrayListOf()
+                    var lastRatio: Float = -1f
+                    var lastLabel: String = "etc"
+                    for (idx in sortedUserWalletList.indices) {
+                        val wallet = sortedUserWalletList[idx]
+                        val valuationPrice = wallet.valuationPrice
+                        val ratio = valuationPrice / totalValuation
+
+                        if (portfolioList.size < 8) {
+                            portfolioList.add(
+                                PieEntry(
+                                    ratio.toFloat(),
+                                    wallet.market.split('-').firstOrNull() ?: " "
+                                )
+                            )
+                        } else if (portfolioList.size < 9) {
+                            lastRatio = ratio.toFloat()
+                            lastLabel = wallet.market.split('-').firstOrNull() ?: ""
+                        } else {
+                            lastRatio = ratio.toFloat()
+                            lastLabel = "etc"
+                        }
+                    }
+                    if (lastRatio != -1f) {
+                        portfolioList.add(
+                            PieEntry(
+                                lastRatio,
+                                lastLabel
+                            )
+                        )
+                    }
+
+                    val changeValuation = totalBidPrice - totalValuation
+                    val earningRate = changeValuation / totalBidPrice
+
+                    val assetData = InvestmentAssetData(
+                        KRW = krw,
+                        totalAsset = totalAsset,
+                        totalBidPrice = totalBidPrice,
+                        changeValuation = changeValuation,
+                        totalValuation = totalValuation,
+                        earningRate = earningRate,
+                        userWalletList = userWalletList,
+                        portfolioList = portfolioList
+                    )
+                    _investmentAssetData.postValue(assetData)
+                },
+                onFailListener = { failMsg ->
+                    DLog.e(TAG, failMsg)
+                    setApiFailMsg(failMsg)
+                },
+                onErrorListener = { e ->
+                    DLog.e(TAG, e.message, e)
+                    setExceptionData(e)
+                }
+            )
+        }
+    }
+
+    fun requestInvestmentRecordData() {
+        DLog.d(TAG, "requestInvestmentRecordData() is called!")
+        setProgressFlag(true)
+        viewModelScope.launch {
+
+        }
+    }
+
+    fun requestInvestmentNotYetData() {
+        DLog.d(TAG, "requestInvestmentNotYetData() is called!")
+        setProgressFlag(true)
+        viewModelScope.launch {
+
+        }
+    }
+
+    fun requestReset() {
+        DLog.d(TAG, "requestReset() is called!")
+        viewModelScope.launch {
+
         }
     }
 

@@ -22,6 +22,10 @@ object ConvertUtil {
         roundingMode = RoundingMode.DOWN
     }
 
+    private val coinQuantityFormatter = DecimalFormat("###,###,###,##0.##########").apply {
+        roundingMode = RoundingMode.DOWN
+    }
+
     fun dp2px(context: Context, dp: Int): Int = dp2px(context, dp.toFloat()).toInt()
 
     fun dp2px(context: Context, dp: Float): Float =
@@ -76,6 +80,13 @@ object ConvertUtil {
      */
     fun orderSize2string(pOrderSize: Double): String {
         return orderSizeFormatter.format(pOrderSize)
+    }
+
+    /**
+     * 코인 보유 수량을 문자열로 변환하는 함수
+     */
+    fun coinQuantity2string(pQuantity: Double): String {
+        return coinQuantityFormatter.format(pQuantity)
     }
 
 }

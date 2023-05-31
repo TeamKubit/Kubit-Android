@@ -19,6 +19,11 @@ data class WalletData(
     val totalPrice: Double
 ) {
 
+    /**
+     * 매수평균가
+     */
+    val bidAvgPrice: Double = totalPrice / quantity
+
     override fun toString(): String {
         return "$TAG{" +
                 "market=$market, " +

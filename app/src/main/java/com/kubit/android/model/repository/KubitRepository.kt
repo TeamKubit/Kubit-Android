@@ -102,6 +102,17 @@ class KubitRepository(
         }
     }
 
+    suspend fun makeResetRequest(
+        pGrantType: String,
+        pAccessToken: String
+    ): KubitNetworkResult<Double> {
+        return withContext(Dispatchers.IO) {
+//            val message =
+
+            KubitNetworkResult.Fail("TEST")
+        }
+    }
+
     companion object {
         private const val TAG: String = "LoginRepository"
 

@@ -5,18 +5,24 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.tabs.TabLayout
 import com.kubit.android.R
 import com.kubit.android.base.BaseFragment
-import com.kubit.android.coinlist.view.CoinListFragment
+import com.kubit.android.common.util.DLog
 import com.kubit.android.databinding.FragmentInvestmentBinding
+import com.kubit.android.investment.adapter.InvestmentAdapter
 import com.kubit.android.main.viewmodel.MainViewModel
+import com.kubit.android.model.data.investment.InvestmentData
 
 class InvestmentFragment : BaseFragment() {
 
     private val model: MainViewModel by activityViewModels()
     private var _binding: FragmentInvestmentBinding? = null
     private val binding: FragmentInvestmentBinding get() = _binding!!
+
+    private lateinit var assetAdapter: InvestmentAdapter
 
     // region Fragment LifeCycle
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,9 +37,20 @@ class InvestmentFragment : BaseFragment() {
     ): View {
         _binding = FragmentInvestmentBinding.inflate(inflater, container, false)
 
+        setObserver()
         init()
 
         return binding.root
+    }
+
+    override fun onResume() {
+        super.onResume()
+        model.requestInvestmentTickerData()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        model.stopTickerData()
     }
 
     override fun onDestroyView() {
@@ -42,7 +59,24 @@ class InvestmentFragment : BaseFragment() {
     }
     // endregion Fragment LifeCycle
 
+    private fun setObserver() {
+        model.investmentAssetData.observe(viewLifecycleOwner, Observer { assetData ->
+            if (assetData != null) {
+                DLog.d(TAG, "assetData=$assetData")
+                assetAdapter.update(assetData)
+            }
+        })
+    }
+
     private fun init() {
+        assetAdapter = InvestmentAdapter(
+            object : InvestmentData {
+                override fun getItemCount(): Int = 0
+
+                override fun getItemType(itemPos: Int): Int = 0
+            }
+        ) { notYetData, pos -> }
+
         binding.apply {
             tlInvestment.apply {
                 addTab(
@@ -62,14 +96,23 @@ class InvestmentFragment : BaseFragment() {
                     override fun onTabSelected(tab: TabLayout.Tab?) {
                         when (tab?.id) {
                             R.id.investment_tab_asset -> {
+                                rvInvestmentAsset.visibility = View.VISIBLE
+                                rvInvestmentRecord.visibility = View.GONE
+                                rvInvestmentNotYet.visibility = View.GONE
                                 tvInvestmentDeleteSelectOrder.visibility = View.GONE
                             }
 
                             R.id.investment_tab_record -> {
+                                rvInvestmentAsset.visibility = View.GONE
+                                rvInvestmentRecord.visibility = View.VISIBLE
+                                rvInvestmentNotYet.visibility = View.GONE
                                 tvInvestmentDeleteSelectOrder.visibility = View.GONE
                             }
 
                             R.id.investment_tab_not_yet -> {
+                                rvInvestmentAsset.visibility = View.GONE
+                                rvInvestmentRecord.visibility = View.GONE
+                                rvInvestmentNotYet.visibility = View.VISIBLE
                                 tvInvestmentDeleteSelectOrder.visibility = View.VISIBLE
                             }
                         }
@@ -81,6 +124,13 @@ class InvestmentFragment : BaseFragment() {
                     override fun onTabReselected(tab: TabLayout.Tab?) {
                     }
                 })
+            }
+
+            rvInvestmentAsset.apply {
+                layoutManager =
+                    LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+                adapter = assetAdapter
+                itemAnimator = null
             }
         }
     }

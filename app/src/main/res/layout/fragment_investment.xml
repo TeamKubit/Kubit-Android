@@ -58,15 +58,36 @@
         android:textColor="@color/investment_btn"
         android:textSize="13dp"
         android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@id/rv_investment"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tl_investment" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_investment"
+        android:id="@+id/rv_investment_asset"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:overScrollMode="never"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_investment_deleteSelectOrder" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_investment_record"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:overScrollMode="never"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_investment_deleteSelectOrder" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_investment_notYet"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:overScrollMode="never"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"

@@ -41,6 +41,7 @@
     <string name="investmentAssetItem_earningRateTitle">수익률</string>
 
     <string name="investmentPortfolioItem_title">보유자산 포트폴리오</string>
+    <string name="investmentPortfolioItem_assetPercent">보유 비중\n(%)</string>
 
     <string name="investmentWalletItem_quantityTitle">보유수량</string>
     <string name="investmentWalletItem_bidAvgPriceTitle">매수평균가</string>
