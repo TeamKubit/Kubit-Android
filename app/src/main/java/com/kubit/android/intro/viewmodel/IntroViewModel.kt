@@ -80,7 +80,6 @@ class IntroViewModel(
     }
 
     fun requestLogin() {
-        setProgressFlag(true)
         viewModelScope.launch {
             val userID = KubitSession.userID
             val userPW = KubitSession.userPW
@@ -106,7 +105,6 @@ class IntroViewModel(
     }
 
     fun requestWalletOverall() {
-        setProgressFlag(true)
         viewModelScope.launch {
             val grantType = KubitSession.grantType
             val accessToken = KubitSession.accessToken
