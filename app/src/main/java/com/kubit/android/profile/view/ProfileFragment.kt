@@ -1,15 +1,22 @@
 package com.kubit.android.profile.view
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.activityViewModels
 import com.kubit.android.R
 import com.kubit.android.base.BaseFragment
 import com.kubit.android.coinlist.view.CoinListFragment
+import com.kubit.android.common.dialog.MessageDialog
+import com.kubit.android.common.session.KubitSession
+import com.kubit.android.common.util.DLog
 import com.kubit.android.databinding.FragmentProfileBinding
+import com.kubit.android.login.view.LoginActivity
 import com.kubit.android.main.viewmodel.MainViewModel
 
 class ProfileFragment : BaseFragment() {
@@ -43,8 +50,105 @@ class ProfileFragment : BaseFragment() {
     // endregion Fragment LifeCycle
 
     private fun init() {
+        applyLoginSession()
 
+        binding.apply {
+            tvProfileLogin.setOnClickListener {
+                // 로그인한 경우
+                if (KubitSession.isLogin()) {
+                    showLogoutDialog()
+                }
+                // 로그아웃한 경우
+                else {
+                    val loginIntent = Intent(requireContext(), LoginActivity::class.java)
+                    loginIntentForResult.launch(loginIntent)
+                }
+            }
+            tvProfileUserGuide.setOnClickListener {
+                // TODO: 사용자 이용가이드 기능 추가
+                showToastMsg("서비스 개봉박두")
+            }
+            tvProfileReset.setOnClickListener {
+                // 로그인한 경우
+                if (KubitSession.isLogin()) {
+                    showResetDialog()
+                }
+                // 로그아웃한 경우
+                else {
+                    val loginIntent = Intent(requireContext(), LoginActivity::class.java)
+                    loginIntentForResult.launch(loginIntent)
+                }
+            }
+        }
     }
+
+    private fun applyLoginSession() {
+        binding.apply {
+            tvProfileUserName.text =
+                if (KubitSession.isLogin()) KubitSession.userName else getString(R.string.profile_requestLogin)
+            tvProfileLogin.text = getString(
+                if (KubitSession.isLogin()) R.string.profile_logout else R.string.profile_login
+            )
+        }
+    }
+
+    // region Dialog
+    private fun showLogoutDialog() {
+        for (fragment in childFragmentManager.fragments) {
+            if (fragment is MessageDialog) {
+                return
+            }
+        }
+
+        MessageDialog(
+            pMsg = getString(R.string.dialog_msg_003),
+            pLeftBtnText = "로그아웃",
+            pLeftBtnClickListener = {
+                model.requestLogout()
+                showToastMsg(getString(R.string.toast_msg_logout_success))
+                applyLoginSession()
+            },
+            pRightBtnText = "취소",
+            pRightBtnClickListener = {
+
+            }
+        ).show(childFragmentManager, MessageDialog.TAG)
+    }
+
+    private fun showResetDialog() {
+        for (fragment in childFragmentManager.fragments) {
+            if (fragment is MessageDialog) {
+                return
+            }
+        }
+
+        MessageDialog(
+            pMsg = getString(R.string.dialog_msg_004),
+            pLeftBtnText = "초기화",
+            pLeftBtnClickListener = {
+                // TODO: 데이터 초기화 코드 추가해야 함
+                showToastMsg("서비스 개봉박두")
+            },
+            pRightBtnText = "취소",
+            pRightBtnClickListener = {
+
+            }
+        ).show(childFragmentManager, MessageDialog.TAG)
+    }
+    // endregion Dialog
+
+    private val loginIntentForResult =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            when (result.resultCode) {
+                AppCompatActivity.RESULT_OK -> {
+                    applyLoginSession()
+                }
+
+                else -> {
+
+                }
+            }
+        }
 
     companion object {
         const val TAG: String = "ProfileFragment"

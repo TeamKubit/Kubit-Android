@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.kubit.android.base.BaseViewModel
+import com.kubit.android.common.session.KubitSession
 import com.kubit.android.common.util.DLog
 import com.kubit.android.model.data.coin.CoinSnapshotData
 import com.kubit.android.model.data.coin.KubitCoinInfoData
@@ -109,6 +110,11 @@ class MainViewModel(
         viewModelScope.launch {
             upbitRepository.stopCoinTickerThread()
         }
+    }
+
+    fun requestLogout() {
+        DLog.d(TAG, "requestLogout() is called!")
+        KubitSession.logout()
     }
 
     companion object {
