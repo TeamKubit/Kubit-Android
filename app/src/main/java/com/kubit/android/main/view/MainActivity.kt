@@ -142,8 +142,7 @@ class MainActivity : BaseActivity() {
                 }
                 // 로그인하지 않은 경우 -> 로그인 화면으로 전환
                 else {
-                    val loginIntent = Intent(this, LoginActivity::class.java)
-                    loginIntentForResult.launch(loginIntent)
+                    launchLoginActivity()
                 }
             }
         })
@@ -159,13 +158,23 @@ class MainActivity : BaseActivity() {
                     }
 
                     R.id.menu_investment -> {
-                        model.setTabRouter(KubitTabRouter.INVESTMENT)
-                        true
+                        if (KubitSession.isLogin()) {
+                            model.setTabRouter(KubitTabRouter.INVESTMENT)
+                            true
+                        } else {
+                            launchLoginActivity()
+                            false
+                        }
                     }
 
                     R.id.menu_exchange -> {
-                        model.setTabRouter(KubitTabRouter.EXCHANGE)
-                        true
+                        if (KubitSession.isLogin()) {
+                            model.setTabRouter(KubitTabRouter.EXCHANGE)
+                            true
+                        } else {
+                            launchLoginActivity()
+                            false
+                        }
                     }
 
                     R.id.menu_profile -> {
@@ -179,6 +188,11 @@ class MainActivity : BaseActivity() {
                 }
             }
         }
+    }
+
+    private fun launchLoginActivity() {
+        val loginIntent = Intent(this, LoginActivity::class.java)
+        loginIntentForResult.launch(loginIntent)
     }
 
     override fun onBackPressed() {
