@@ -20,7 +20,7 @@ class IntroRepository(
         return withContext(Dispatchers.IO) {
             val strUrl = "${UPBIT_API_HOST_URL}market/all"
             val hsParams = HashMap<String, String>().apply {
-                put("isDeatils", "true")
+                put("isDetails", "true")
             }
             val message = sendRequest(strUrl, hsParams, "GET")
 
