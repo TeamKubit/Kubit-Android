@@ -31,7 +31,7 @@ class InvestmentWalletViewHolder(
             // 코인 한글명
             tvInvestmentWalletItemNameKor.text = wallet.nameKor
             // 코인 영문명
-            tvInvestmentWalletItemNameEng.text = wallet.nameEng
+            tvInvestmentWalletItemNameEng.text = "(${wallet.nameEng})"
             // 평가손익
             tvInvestmentWalletItemChangeValuation.text =
                 ConvertUtil.tradePrice2string(wallet.changeValuation)

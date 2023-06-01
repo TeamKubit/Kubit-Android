@@ -481,8 +481,8 @@ class JsonParserUtil {
 
                         if (obj != null) {
                             val market = getString(obj, KEY_MARKET_CODE)
-                            val nameKor = getString(obj, KEY_KOR_NAME)
-                            val nameEng = getString(obj, KEY_ENG_NAME)
+                            val nameKor = getString(obj, KEY_KOREAN_NAME)
+                            val nameEng = getString(obj, KEY_ENGLISH_NAME)
                             val quantityAvailable = getDouble(obj, KEY_QUANTITY_AVAILABLE)
                             val quantity = getDouble(obj, KEY_QUANTITY)
                             val totalPrice = getDouble(obj, KEY_TOTAL_PRICE)
@@ -567,6 +567,8 @@ class JsonParserUtil {
         private const val KEY_MONEY: String = "money"
         private const val KEY_WALLET: String = "wallet"
         private const val KEY_MARKET_CODE: String = "marketCode"
+        private const val KEY_KOREAN_NAME: String = "koreanName"
+        private const val KEY_ENGLISH_NAME: String = "englishName"
         private const val KEY_QUANTITY_AVAILABLE: String = "quantityAvailable"
         private const val KEY_QUANTITY: String = "quantity"
         private const val KEY_TOTAL_PRICE: String = "totalPrice"
