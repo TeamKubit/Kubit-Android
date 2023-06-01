@@ -5,6 +5,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.kubit.android.R
 import com.kubit.android.common.util.ConvertUtil
+import com.kubit.android.common.util.DLog
 import com.kubit.android.databinding.ItemInvestmentWalletBinding
 import com.kubit.android.model.data.investment.InvestmentAssetData
 
@@ -24,6 +25,7 @@ class InvestmentWalletViewHolder(
     fun bindData(pData: InvestmentAssetData) {
         val pos = bindingAdapterPosition
         val wallet = pData.userWalletList[pos - 2]
+        DLog.d(TAG, "wallet=$wallet")
 
         binding.apply {
             // 코인 한글명
@@ -50,6 +52,10 @@ class InvestmentWalletViewHolder(
             tvInvestmentWalletItemBidPrice.text =
                 ConvertUtil.tradePrice2string(wallet.askTotalPrice)
         }
+    }
+
+    companion object {
+        private const val TAG: String = "InvestmentWalletViewHolder"
     }
 
 }

@@ -6,6 +6,14 @@ data class WalletData(
      */
     val market: String,
     /**
+     * 코인 한글명
+     */
+    val nameKor: String,
+    /**
+     * 코인 영문명
+     */
+    val nameEng: String,
+    /**
      * 거래 가능한 수량
      */
     val quantityAvailable: Double,
@@ -27,6 +35,8 @@ data class WalletData(
     override fun toString(): String {
         return "$TAG{" +
                 "market=$market, " +
+                "nameKor=$nameKor, " +
+                "nameEng=$nameEng, " +
                 "quantityAvailable=$quantityAvailable, " +
                 "quantity=$quantity, " +
                 "totalPrice=$totalPrice}"

@@ -30,7 +30,9 @@ class InvestmentAdapter(
             R.layout.item_investment_asset -> {
                 InvestmentAssetViewHolder(
                     ItemInvestmentAssetBinding.inflate(
-                        LayoutInflater.from(parent.context)
+                        LayoutInflater.from(parent.context),
+                        parent,
+                        false
                     )
                 )
             }
@@ -38,7 +40,9 @@ class InvestmentAdapter(
             R.layout.item_investment_portfolio -> {
                 InvestmentPortfolioViewHolder(
                     ItemInvestmentPortfolioBinding.inflate(
-                        LayoutInflater.from(parent.context)
+                        LayoutInflater.from(parent.context),
+                        parent,
+                        false
                     )
                 )
             }
@@ -46,7 +50,9 @@ class InvestmentAdapter(
             R.layout.item_investment_wallet -> {
                 InvestmentWalletViewHolder(
                     ItemInvestmentWalletBinding.inflate(
-                        LayoutInflater.from(parent.context)
+                        LayoutInflater.from(parent.context),
+                        parent,
+                        false
                     )
                 )
             }
@@ -54,7 +60,9 @@ class InvestmentAdapter(
             R.layout.item_investment_record -> {
                 InvestmentRecordViewHolder(
                     ItemInvestmentRecordBinding.inflate(
-                        LayoutInflater.from(parent.context)
+                        LayoutInflater.from(parent.context),
+                        parent,
+                        false
                     )
                 )
             }
@@ -62,7 +70,9 @@ class InvestmentAdapter(
             R.layout.item_investment_not_yet -> {
                 InvestmentNotYetViewHolder(
                     ItemInvestmentNotYetBinding.inflate(
-                        LayoutInflater.from(parent.context)
+                        LayoutInflater.from(parent.context),
+                        parent,
+                        false
                     )
                 ) { pos ->
                     val mData = data
@@ -76,7 +86,9 @@ class InvestmentAdapter(
             else -> {
                 InvestmentNotYetViewHolder(
                     ItemInvestmentNotYetBinding.inflate(
-                        LayoutInflater.from(parent.context)
+                        LayoutInflater.from(parent.context),
+                        parent,
+                        false
                     )
                 ) { pos ->
 

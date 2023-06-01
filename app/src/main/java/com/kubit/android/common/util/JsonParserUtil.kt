@@ -481,6 +481,8 @@ class JsonParserUtil {
 
                         if (obj != null) {
                             val market = getString(obj, KEY_MARKET_CODE)
+                            val nameKor = getString(obj, KEY_KOR_NAME)
+                            val nameEng = getString(obj, KEY_ENG_NAME)
                             val quantityAvailable = getDouble(obj, KEY_QUANTITY_AVAILABLE)
                             val quantity = getDouble(obj, KEY_QUANTITY)
                             val totalPrice = getDouble(obj, KEY_TOTAL_PRICE)
@@ -488,6 +490,8 @@ class JsonParserUtil {
                             walletList.add(
                                 WalletData(
                                     market,
+                                    nameKor,
+                                    nameEng,
                                     quantityAvailable,
                                     quantity,
                                     totalPrice

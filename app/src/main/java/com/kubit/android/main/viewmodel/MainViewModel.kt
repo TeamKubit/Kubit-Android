@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.github.mikephil.charting.data.PieEntry
 import com.kubit.android.base.BaseViewModel
 import com.kubit.android.common.session.KubitSession
+import com.kubit.android.common.util.ConvertUtil
 import com.kubit.android.common.util.DLog
 import com.kubit.android.model.data.coin.CoinSnapshotData
 import com.kubit.android.model.data.coin.KubitCoinInfoData
@@ -145,8 +146,9 @@ class MainViewModel(
                             val snapshotData = snapshotDataList[idx]
 
                             val valuationPrice = wallet.quantity * snapshotData.tradePrice
+                            val changeValuation = valuationPrice - wallet.totalPrice
                             val earningRate =
-                                (wallet.totalPrice - valuationPrice) / wallet.totalPrice
+                                if (wallet.totalPrice > 0) changeValuation / wallet.totalPrice else 0.0
 
                             totalAsset += valuationPrice
                             totalValuation += valuationPrice
@@ -157,7 +159,7 @@ class MainViewModel(
                                     market = snapshotData.market,
                                     nameKor = snapshotData.nameKor,
                                     nameEng = snapshotData.nameEng,
-                                    changeValuation = snapshotData.signedChangePrice,
+                                    changeValuation = changeValuation,
                                     earningRate = earningRate,
                                     quantity = wallet.quantity,
                                     bidAvgPrice = wallet.bidAvgPrice,
@@ -170,44 +172,60 @@ class MainViewModel(
 
                     val sortedUserWalletList = arrayListOf<InvestmentWalletData>().apply {
                         addAll(userWalletList)
+                        add(
+                            InvestmentWalletData(
+                                market = "KRW",
+                                nameKor = "",
+                                nameEng = "",
+                                changeValuation = 0.0,
+                                earningRate = 0.0,
+                                quantity = 0.0,
+                                bidAvgPrice = 0.0,
+                                valuationPrice = krw,
+                                askTotalPrice = krw
+                            )
+                        )
                     }
                     sortedUserWalletList.sortWith { wallet1, wallet2 ->
                         wallet2.valuationPrice.compareTo(wallet1.valuationPrice)
                     }
                     val portfolioList: ArrayList<PieEntry> = arrayListOf()
-                    var lastRatio: Float = -1f
+                    var lastRatio: Double = -1.0
                     var lastLabel: String = "etc"
                     for (idx in sortedUserWalletList.indices) {
                         val wallet = sortedUserWalletList[idx]
                         val valuationPrice = wallet.valuationPrice
-                        val ratio = valuationPrice / totalValuation
+                        val ratio = valuationPrice / (totalValuation + krw)
 
                         if (portfolioList.size < 8) {
                             portfolioList.add(
                                 PieEntry(
                                     ratio.toFloat(),
-                                    wallet.market.split('-').firstOrNull() ?: " "
+                                    ConvertUtil.ratio2pieChartLabel(ratio),
+                                    wallet.market.split('-').getOrNull(1) ?: "KRW"
                                 )
                             )
                         } else if (portfolioList.size < 9) {
-                            lastRatio = ratio.toFloat()
-                            lastLabel = wallet.market.split('-').firstOrNull() ?: ""
+                            lastRatio = ratio
+                            lastLabel = wallet.market.split('-').getOrNull(1) ?: "KRW"
                         } else {
-                            lastRatio = ratio.toFloat()
+                            lastRatio += ratio
                             lastLabel = "etc"
                         }
                     }
-                    if (lastRatio != -1f) {
+                    if (lastRatio != -1.0) {
                         portfolioList.add(
                             PieEntry(
-                                lastRatio,
+                                lastRatio.toFloat(),
+                                ConvertUtil.ratio2pieChartLabel(lastRatio),
                                 lastLabel
                             )
                         )
                     }
 
-                    val changeValuation = totalBidPrice - totalValuation
-                    val earningRate = changeValuation / totalBidPrice
+                    val changeValuation = totalValuation - totalBidPrice
+                    val earningRate =
+                        if (totalBidPrice > 0) changeValuation / totalBidPrice else 0.0
 
                     val assetData = InvestmentAssetData(
                         KRW = krw,

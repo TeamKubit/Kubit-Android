@@ -2,6 +2,7 @@ package com.kubit.android.investment.viewholder
 
 import android.content.Context
 import android.graphics.Color
+import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.github.mikephil.charting.data.PieData
@@ -30,30 +31,40 @@ class InvestmentPortfolioViewHolder(
     )
 
     init {
-        binding.pcInvestmentPortfolio.apply {
-            // Whether to show the middle hole
-            isDrawHoleEnabled = true
-            holeRadius = 40f
-            setHoleColor(Color.TRANSPARENT)
-            transparentCircleRadius = 0f
+        binding.apply {
+            pcInvestmentPortfolio.apply {
+                // Whether to show the middle hole
+                isDrawHoleEnabled = true
+                holeRadius = 40f
+                setHoleColor(Color.TRANSPARENT)
+                transparentCircleRadius = 0f
 
-            // Whether to show text in the middle of the pie chart
-            setDrawCenterText(true)
-            centerText = context.getString(R.string.investmentPortfolioItem_assetPercent)
-            setCenterTextColor(ContextCompat.getColor(context, R.color.text))
-            setCenterTextSize(14f)
+                // Whether to show text in the middle of the pie chart
+                setDrawCenterText(true)
+                centerText = context.getString(R.string.investmentPortfolioItem_assetPercent)
+                setCenterTextColor(ContextCompat.getColor(context, R.color.text))
+                setCenterTextSize(14f)
 
-            isRotationEnabled = false
-            // Displayed as a percentage
-            setUsePercentValues(true)
-            description.isEnabled = false
+                isRotationEnabled = false
+                // Displayed as a percentage
+                setUsePercentValues(true)
+                description.isEnabled = false
 
-            setBackgroundColor(Color.TRANSPARENT)
-            legend.isEnabled = false
+                setBackgroundColor(Color.TRANSPARENT)
+                legend.isEnabled = false
 
-//            setDrawEntryLabels(false)
-            setEntryLabelColor(ContextCompat.getColor(context, R.color.gray))
-            setEntryLabelTextSize(12f)
+                setEntryLabelColor(ContextCompat.getColor(context, R.color.background))
+                setEntryLabelTextSize(12f)
+            }
+
+            ivInvestmentPortfolioButton.setOnClickListener {
+                val prev = clInvestmentPortfolioChart.visibility
+                clInvestmentPortfolioChart.visibility =
+                    if (prev == View.VISIBLE) View.GONE else View.VISIBLE
+                ivInvestmentPortfolioButton.setImageResource(
+                    if (prev == View.VISIBLE) R.drawable.icon_up else R.drawable.icon_down
+                )
+            }
         }
     }
 
@@ -71,6 +82,8 @@ class InvestmentPortfolioViewHolder(
 
                 invalidate()
             }
+
+            cvInvestmentPortfolio.bindData(pData.portfolioList)
         }
     }
 

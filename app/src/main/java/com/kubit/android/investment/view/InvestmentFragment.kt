@@ -4,16 +4,21 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.github.mikephil.charting.data.PieEntry
 import com.google.android.material.tabs.TabLayout
 import com.kubit.android.R
 import com.kubit.android.base.BaseFragment
+import com.kubit.android.common.deco.BorderItemDecoration
+import com.kubit.android.common.util.ConvertUtil
 import com.kubit.android.common.util.DLog
 import com.kubit.android.databinding.FragmentInvestmentBinding
 import com.kubit.android.investment.adapter.InvestmentAdapter
 import com.kubit.android.main.viewmodel.MainViewModel
+import com.kubit.android.model.data.investment.InvestmentAssetData
 import com.kubit.android.model.data.investment.InvestmentData
 
 class InvestmentFragment : BaseFragment() {
@@ -70,11 +75,16 @@ class InvestmentFragment : BaseFragment() {
 
     private fun init() {
         assetAdapter = InvestmentAdapter(
-            object : InvestmentData {
-                override fun getItemCount(): Int = 0
-
-                override fun getItemType(itemPos: Int): Int = 0
-            }
+            InvestmentAssetData(
+                KRW = 1.0,
+                totalAsset = 1.0,
+                totalBidPrice = 0.0,
+                changeValuation = 0.0,
+                totalValuation = 1.0,
+                earningRate = 0.0,
+                userWalletList = listOf(),
+                portfolioList = listOf(PieEntry(1f, "KRW"))
+            )
         ) { notYetData, pos -> }
 
         binding.apply {
@@ -131,6 +141,13 @@ class InvestmentFragment : BaseFragment() {
                     LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
                 adapter = assetAdapter
                 itemAnimator = null
+                addItemDecoration(
+                    BorderItemDecoration(
+                        borderPos = listOf(BorderItemDecoration.BorderPos.BOTTOM),
+                        borderWidth = ConvertUtil.dp2px(requireContext(), 1),
+                        borderColor = ContextCompat.getColor(requireContext(), R.color.border)
+                    )
+                )
             }
         }
     }

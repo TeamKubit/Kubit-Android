@@ -76,6 +76,8 @@ class KubitTickerThread : BaseNetworkThread {
                 } catch (e: JSONException) {
                     onErrorListener(e)
                 }
+
+                sleep(SLEEP_TIME)
             }
         } else {
             onSuccessListener(listOf())
@@ -100,8 +102,8 @@ class KubitTickerThread : BaseNetworkThread {
                         KubitCoinInfoData(
                             market = wallet.market,
                             marketCode = "",
-                            nameKor = "",
-                            nameEng = ""
+                            nameKor = wallet.nameKor,
+                            nameEng = wallet.nameEng
                         )
                     )
                 }

@@ -26,6 +26,10 @@ object ConvertUtil {
         roundingMode = RoundingMode.DOWN
     }
 
+    private val pieChartLabelFormatter = DecimalFormat("#0.0").apply {
+        roundingMode = RoundingMode.DOWN
+    }
+
     fun dp2px(context: Context, dp: Int): Int = dp2px(context, dp.toFloat()).toInt()
 
     fun dp2px(context: Context, dp: Float): Float =
@@ -84,9 +88,20 @@ object ConvertUtil {
 
     /**
      * 코인 보유 수량을 문자열로 변환하는 함수
+     *
+     * @param pQuantity 코인 보유 수량
      */
     fun coinQuantity2string(pQuantity: Double): String {
         return coinQuantityFormatter.format(pQuantity)
+    }
+
+    /**
+     * 투자내역 화면의 보유자산 포트폴리오 파이 차트 라벨을 만들 때 사용함
+     *
+     * @param pRatio    코인의 보유 비중
+     */
+    fun ratio2pieChartLabel(pRatio: Double): String {
+        return pieChartLabelFormatter.format(pRatio * 100)
     }
 
 }

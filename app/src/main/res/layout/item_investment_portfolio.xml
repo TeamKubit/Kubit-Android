@@ -18,7 +18,7 @@
         android:text="@string/investmentPortfolioItem_title"
         android:textColor="@color/text"
         android:textSize="13dp"
-        app:layout_constraintBottom_toBottomOf="@id/cl_investmentPortfolio_chart"
+        app:layout_constraintBottom_toTopOf="@id/cl_investmentPortfolio_chart"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0"
@@ -29,7 +29,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginRight="5dp"
-        android:padding="5dp"
+        android:padding="10dp"
         android:src="@drawable/icon_down"
         app:layout_constraintBottom_toBottomOf="@id/tv_investmentPortfolio_title"
         app:layout_constraintRight_toRightOf="parent"
@@ -57,11 +57,23 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginLeft="25dp"
+            android:layout_marginBottom="25dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintDimensionRatio="H,1:1"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toLeftOf="@id/gl_investmentPortfolio"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <com.kubit.android.common.custom.KubitPortfolioRatioList
+            android:id="@+id/cv_investmentPortfolio"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="27dp"
+            android:layout_marginRight="20dp"
+            app:layout_constraintBottom_toBottomOf="@id/pc_investmentPortfolio"
+            app:layout_constraintLeft_toRightOf="@id/gl_investmentPortfolio"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@id/pc_investmentPortfolio" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
