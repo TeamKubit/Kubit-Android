@@ -14,11 +14,14 @@ import com.kubit.android.model.data.orderbook.OrderBookData
 import com.kubit.android.model.data.route.TransactionTabRouter
 import com.kubit.android.model.data.transaction.TransactionMethod
 import com.kubit.android.model.data.transaction.TransactionType
+import com.kubit.android.model.repository.KubitRepository
 import com.kubit.android.model.repository.TransactionRepository
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 class TransactionViewModel(
-    private val transactionRepository: TransactionRepository
+    private val transactionRepository: TransactionRepository,
+    private val kubitRepository: KubitRepository
 ) : BaseViewModel() {
 
     private lateinit var selectedCoinData: KubitCoinInfoData
@@ -26,6 +29,7 @@ class TransactionViewModel(
     private val _tabRouter: MutableLiveData<TransactionTabRouter> = MutableLiveData()
     val tabRouter: LiveData<TransactionTabRouter> get() = _tabRouter
 
+    // region 호가창 화면 관련 변수
     private val _coinSnapshotData: MutableLiveData<CoinSnapshotData> = MutableLiveData()
     val coinSnapshotData: LiveData<CoinSnapshotData> get() = _coinSnapshotData
 
@@ -34,6 +38,30 @@ class TransactionViewModel(
      */
     private val _coinOpeningPrice: MutableLiveData<Double?> = MutableLiveData(null)
     val coinOpeningPrice: LiveData<Double?> get() = _coinOpeningPrice
+
+    /**
+     * 코인 현재가 -> 호가창 화면 초기화 목적으로 사용
+     */
+    private val _coinTradePrice: MutableLiveData<Double?> = MutableLiveData(null)
+    val coinTradePrice: LiveData<Double?> get() = _coinTradePrice
+
+    /**
+     * 사용자가 입력한 코인의 주문 수량
+     */
+    private var _orderQuantity: MutableLiveData<Double> = MutableLiveData(0.0)
+    val orderQuantity: LiveData<Double> get() = _orderQuantity
+
+    /**
+     * 사용자가 입력한 코인 1개당 가격
+     */
+    private var _orderUnitPrice: MutableLiveData<Double> = MutableLiveData(0.0)
+    val orderUnitPrice: LiveData<Double> get() = _orderUnitPrice
+
+    /**
+     * 지정가 거래에서의 총액
+     */
+    private val _orderTotalPrice: MutableLiveData<Double> = MutableLiveData(0.0)
+    val orderTotalPrice: LiveData<Double> get() = _orderTotalPrice
 
     /**
      * 코인 호가 데이터
@@ -54,7 +82,9 @@ class TransactionViewModel(
     private val _transactionMethod: MutableLiveData<TransactionMethod> =
         MutableLiveData(TransactionMethod.DESIGNATED_PRICE)
     val transactionMethod: LiveData<TransactionMethod> get() = _transactionMethod
+    // endregion 호가창 화면 관련 변수
 
+    // region 차트 화면 관련 변수
     /**
      * 가격 차트 메인 지표
      */
@@ -79,6 +109,7 @@ class TransactionViewModel(
      */
     private val _chartDataWrapper: MutableLiveData<ChartDataWrapper?> = MutableLiveData(null)
     val chartDataWrapper: LiveData<ChartDataWrapper?> get() = _chartDataWrapper
+    // endregion 차트 화면 관련 변수
 
     fun initSelectedCoinData(pSelectedCoinData: KubitCoinInfoData) {
         setProgressFlag(true)
@@ -101,6 +132,50 @@ class TransactionViewModel(
     fun setTransactionMethod(pTransactionMethod: TransactionMethod) {
         if (transactionMethod.value != pTransactionMethod) {
             _transactionMethod.value = pTransactionMethod
+        }
+    }
+
+    /**
+     * 지정가 거래에서의 주문 수량을 설정하는 함수
+     *
+     * @param pOrderQuantity    주문 수량
+     */
+    fun setOrderQuantity(pOrderQuantity: Double) {
+        DLog.d(TAG, "setOrderQuantity(), pOrderQuantity=$pOrderQuantity")
+        _orderQuantity.postValue(pOrderQuantity)
+        _orderTotalPrice.postValue(pOrderQuantity * (orderUnitPrice.value ?: 0.0))
+    }
+
+    /**
+     * 지정가 거래에서의 코인 1개당 가격을 설정하는 함수
+     *
+     * @param pOrderUnitPrice   코인 1개당 가격
+     */
+    fun setOrderUnitPrice(pOrderUnitPrice: Double) {
+        DLog.d(TAG, "setOrderUnitPrice(), pOrderUnitPrice=$pOrderUnitPrice")
+        _orderUnitPrice.postValue(pOrderUnitPrice)
+        _orderTotalPrice.postValue((orderQuantity.value ?: 0.0) * pOrderUnitPrice)
+    }
+
+    /**
+     * 총 주문 금액을 설정하는 함수
+     *
+     * @param pOrderTotalPrice  총 주문 금액
+     */
+    fun setOrderTotalPrice(pOrderTotalPrice: Double) {
+        DLog.d(TAG, "setOrderTotalPrice(), pOrderTotalPrice=$pOrderTotalPrice")
+        _orderTotalPrice.postValue(pOrderTotalPrice)
+
+        orderUnitPrice.value?.let { unitPrice ->
+            if (unitPrice > 0) {
+                val quantity = (pOrderTotalPrice / unitPrice).toInt().toDouble()
+                _orderQuantity.postValue(quantity)
+            } else {
+                val newUnitPrice = coinTradePrice.value!!
+                _orderUnitPrice.postValue(newUnitPrice)
+                val quantity = (pOrderTotalPrice / newUnitPrice).toInt().toDouble()
+                _orderQuantity.postValue(quantity)
+            }
         }
     }
 
@@ -167,12 +242,14 @@ class TransactionViewModel(
             transactionRepository.makeCoinTickerThread(
                 pSelectedCoinData = selectedCoinData,
                 onSuccessListener = { snapshotDataList ->
-                    DLog.d(TAG, "snapshotDataList=$snapshotDataList")
                     snapshotDataList.firstOrNull()?.let { snapshotData ->
                         _coinSnapshotData.postValue(snapshotData)
 
                         if (coinOpeningPrice.value == null) {
                             _coinOpeningPrice.postValue(snapshotData.openingPrice)
+                        }
+                        if (coinTradePrice.value == null) {
+                            _coinTradePrice.postValue(snapshotData.tradePrice)
                         }
                     }
                 },
@@ -202,7 +279,6 @@ class TransactionViewModel(
                 pSelectedCoinData = selectedCoinData,
                 pOpeningPrice = coinOpeningPrice.value ?: 0.0,
                 onSuccessListener = { orderBookData ->
-                    DLog.d(TAG, "orderBookData=$orderBookData")
                     _orderBookData.postValue(orderBookData)
                 },
                 onFailListener = { failMsg ->

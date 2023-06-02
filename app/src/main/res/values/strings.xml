@@ -84,7 +84,7 @@
     <string name="orderBook_canOrderTitle">주문가능</string>
     <string name="orderBook_quantity">수량</string>
     <string name="orderBook_quantityPercent">가능</string>
-    <string name="orderBook_price">가격</string>
+    <string name="orderBook_unitPrice">가격</string>
     <string name="orderBook_totalPriceTitle">총액</string>
     <string name="orderBook_clear">초기화</string>
     <string name="orderBook_bid">매수</string>
@@ -119,6 +119,13 @@
     <string name="login_pwHint">PW를 입력해 주세요.</string>
     <string name="login_confirm">로그인하기</string>
     <string name="login_checkInputMsg">ID 또는 PW를 입력해 주세요.</string>
+
+    <string name="enterPrice_unitPriceTitle">주문수량 입력</string>
+    <string name="enterPrice_quantityTitle">주문가격 입력</string>
+    <string name="enterPrice_totalPriceTitle">주문총액 입력</string>
+    <string name="enterPrice_unitPrice">주문가격</string>
+    <string name="enterPrice_quantity">주문수량</string>
+    <string name="enterPrice_totalPrice">주문총액</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

@@ -22,7 +22,7 @@ object ConvertUtil {
         roundingMode = RoundingMode.DOWN
     }
 
-    private val coinQuantityFormatter = DecimalFormat("###,###,###,##0.##########").apply {
+    private val coinQuantityFormatter = DecimalFormat("###,###,###,##0.########").apply {
         roundingMode = RoundingMode.DOWN
     }
 
@@ -48,6 +48,20 @@ object ConvertUtil {
      */
     fun tradePrice2string(pTradePrice: Double): String {
         return if (pTradePrice < 100) {
+            priceFormatterUnder100.format(pTradePrice)
+        } else {
+            priceFormatterOver100.format(pTradePrice)
+        }
+    }
+
+    /**
+     * double 타입의 가격을 문자열로 변환하는 함수
+     *
+     * @param pTradePrice       가격
+     * @param pWithDecimalPoint 소수점 표시 여부
+     */
+    fun tradePrice2string(pTradePrice: Double, pWithDecimalPoint: Boolean): String {
+        return if (pWithDecimalPoint) {
             priceFormatterUnder100.format(pTradePrice)
         } else {
             priceFormatterOver100.format(pTradePrice)
@@ -102,6 +116,20 @@ object ConvertUtil {
      */
     fun ratio2pieChartLabel(pRatio: Double): String {
         return pieChartLabelFormatter.format(pRatio * 100)
+    }
+
+    /**
+     * 금액을 "${금액} KRW" 형태의 문자열로 변환하는 함수
+     *
+     * @param pPrice    금액
+     * @param pWithKRW  KRW 단위를 붙일지 여부
+     */
+    fun price2krwString(pPrice: Double, pWithKRW: Boolean): String {
+        return if (pWithKRW) {
+            "${priceFormatterOver100.format(pPrice)} KRW"
+        } else {
+            priceFormatterOver100.format(pPrice)
+        }
     }
 
 }

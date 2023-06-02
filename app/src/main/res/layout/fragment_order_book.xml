@@ -161,7 +161,7 @@
             android:gravity="center_vertical|right"
             android:includeFontPadding="false"
             android:letterSpacing="-0.05"
-            android:text="123,456,789 KRW"
+            android:text="0 KRW"
             android:textColor="@color/text"
             android:textSize="14dp"
             app:layout_constraintBottom_toBottomOf="@id/tv_orderBook_canOrderTitle"
@@ -175,16 +175,18 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="15dp"
             android:layout_marginTop="15dp"
-            android:layout_marginRight="5dp"
+            android:layout_marginRight="15dp"
             android:background="@drawable/back_border"
+            android:clickable="true"
+            android:focusable="true"
             android:padding="1dp"
-            app:layout_constraintBottom_toTopOf="@id/cl_orderBook_price"
+            app:layout_constraintBottom_toTopOf="@id/cl_orderBook_unitPrice"
             app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toLeftOf="@id/cl_orderBook_quantityPercent"
+            app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_orderBook_canOrderTitle">
 
             <TextView
-                android:id="@+id/tv_orderBook_quantity"
+                android:id="@+id/tv_orderBook_quantityTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="6dp"
@@ -198,89 +200,48 @@
                 android:textSize="14dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toLeftOf="@id/et_orderBook_quantity"
+                app:layout_constraintRight_toLeftOf="@id/tv_orderBook_quantity"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <EditText
-                android:id="@+id/et_orderBook_quantity"
+            <TextView
+                android:id="@+id/tv_orderBook_quantity"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                android:background="@color/background"
                 android:fontFamily="@font/noto_sans_kr_regular"
                 android:gravity="center_vertical|right"
                 android:includeFontPadding="false"
                 android:letterSpacing="-0.05"
                 android:paddingLeft="5dp"
                 android:paddingRight="6dp"
-                android:text="12.38261"
+                android:text="0"
                 android:textColor="@color/text"
                 android:textSize="14dp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintLeft_toRightOf="@id/tv_orderBook_quantity"
+                app:layout_constraintLeft_toRightOf="@id/tv_orderBook_quantityTitle"
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/cl_orderBook_quantityPercent"
-            android:layout_width="55dp"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="15dp"
-            android:background="@color/border"
-            app:layout_constraintBottom_toBottomOf="@id/cl_orderBook_quantity"
-            app:layout_constraintLeft_toRightOf="@id/cl_orderBook_quantity"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="@id/cl_orderBook_quantity">
-
-            <TextView
-                android:id="@+id/tv_orderBook_quantityPercent"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:layout_marginTop="7dp"
-                android:layout_marginBottom="8dp"
-                android:fontFamily="@font/noto_sans_kr_regular"
-                android:includeFontPadding="false"
-                android:letterSpacing="-0.05"
-                android:text="@string/orderBook_quantityPercent"
-                android:textColor="@color/text"
-                android:textSize="14dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toLeftOf="@id/iv_orderBook_quantityPercent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <ImageView
-                android:id="@+id/iv_orderBook_quantityPercent"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="8dp"
-                android:layout_marginRight="10dp"
-                android:src="@drawable/icon_drop_down"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintLeft_toRightOf="@id/tv_orderBook_quantityPercent"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/cl_orderBook_price"
+            android:id="@+id/cl_orderBook_unitPrice"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginLeft="15dp"
             android:layout_marginTop="5dp"
+            android:layout_marginRight="15dp"
             android:background="@drawable/back_border"
+            android:clickable="true"
+            android:focusable="true"
             android:padding="1dp"
             app:layout_constraintBottom_toTopOf="@id/cl_orderBook_totalPrice"
             app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toLeftOf="@id/cl_orderBook_priceMinus"
+            app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@id/cl_orderBook_quantity"
             app:layout_goneMarginTop="15dp">
 
             <TextView
-                android:id="@+id/tv_orderBook_price"
+                android:id="@+id/tv_orderBook_unitPriceTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="6dp"
@@ -289,78 +250,29 @@
                 android:fontFamily="@font/noto_sans_kr_regular"
                 android:includeFontPadding="false"
                 android:letterSpacing="-0.05"
-                android:text="@string/orderBook_price"
+                android:text="@string/orderBook_unitPrice"
                 android:textColor="@color/text"
                 android:textSize="14dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toLeftOf="@id/et_orderBook_price"
+                app:layout_constraintRight_toLeftOf="@id/tv_orderBook_unitPrice"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <EditText
-                android:id="@+id/et_orderBook_price"
+            <TextView
+                android:id="@+id/tv_orderBook_unitPrice"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                android:background="@color/background"
                 android:fontFamily="@font/noto_sans_kr_regular"
                 android:gravity="center_vertical|right"
                 android:includeFontPadding="false"
                 android:letterSpacing="-0.05"
                 android:paddingLeft="5dp"
                 android:paddingRight="6dp"
-                android:text="59,960"
+                android:text="0"
                 android:textColor="@color/text"
                 android:textSize="14dp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintLeft_toRightOf="@id/tv_orderBook_price"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/cl_orderBook_priceMinus"
-            android:layout_width="27dp"
-            android:layout_height="0dp"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="1dp"
-            android:background="@color/border"
-            app:layout_constraintBottom_toBottomOf="@id/cl_orderBook_price"
-            app:layout_constraintLeft_toRightOf="@id/cl_orderBook_price"
-            app:layout_constraintRight_toLeftOf="@id/cl_orderBook_pricePlus"
-            app:layout_constraintTop_toTopOf="@id/cl_orderBook_price">
-
-            <ImageView
-                android:id="@+id/iv_orderBook_priceMinus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/icon_minus"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/cl_orderBook_pricePlus"
-            android:layout_width="27dp"
-            android:layout_height="0dp"
-            android:layout_marginRight="15dp"
-            android:background="@color/border"
-            app:layout_constraintBottom_toBottomOf="@id/cl_orderBook_price"
-            app:layout_constraintLeft_toRightOf="@id/cl_orderBook_priceMinus"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="@id/cl_orderBook_price">
-
-            <ImageView
-                android:id="@+id/iv_orderBook_pricePlus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@color/border"
-                android:src="@drawable/icon_plus"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintLeft_toRightOf="@id/tv_orderBook_unitPriceTitle"
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -374,18 +286,21 @@
             android:layout_marginTop="5dp"
             android:layout_marginRight="15dp"
             android:background="@drawable/back_border"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="1dp"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cl_orderBook_price"
+            app:layout_constraintTop_toBottomOf="@id/cl_orderBook_unitPrice"
             app:layout_goneMarginTop="15dp">
 
             <TextView
                 android:id="@+id/tv_orderBook_totalPriceTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="7dp"
-                android:layout_marginTop="7dp"
-                android:layout_marginBottom="8dp"
+                android:layout_marginLeft="6dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="7dp"
                 android:fontFamily="@font/noto_sans_kr_regular"
                 android:includeFontPadding="false"
                 android:letterSpacing="-0.05"
@@ -400,13 +315,15 @@
             <TextView
                 android:id="@+id/tv_orderBook_totalPrice"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="7dp"
+                android:layout_height="0dp"
+                android:background="@color/background"
                 android:fontFamily="@font/noto_sans_kr_regular"
                 android:gravity="center_vertical|right"
                 android:includeFontPadding="false"
                 android:letterSpacing="-0.05"
-                android:text="123,456 KRW"
+                android:paddingLeft="5dp"
+                android:paddingRight="6dp"
+                android:text="0 KRW"
                 android:textColor="@color/text"
                 android:textSize="14dp"
                 app:layout_constraintBottom_toBottomOf="parent"

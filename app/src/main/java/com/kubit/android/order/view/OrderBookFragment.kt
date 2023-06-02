@@ -1,6 +1,8 @@
 package com.kubit.android.order.view
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +12,9 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import com.kubit.android.R
 import com.kubit.android.base.BaseFragment
+import com.kubit.android.common.dialog.EnterPriceDialog
+import com.kubit.android.common.session.KubitSession
+import com.kubit.android.common.util.ConvertUtil
 import com.kubit.android.common.util.DLog
 import com.kubit.android.databinding.FragmentOrderBookBinding
 import com.kubit.android.model.data.transaction.TransactionMethod
@@ -35,13 +40,11 @@ class OrderBookFragment : BaseFragment() {
     // region Fragment LifeCycle
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-        }
+        arguments?.let {}
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentOrderBookBinding.inflate(inflater, container, false)
 
@@ -68,12 +71,6 @@ class OrderBookFragment : BaseFragment() {
     // endregion Fragment LifeCycle
 
     private fun setObserver() {
-        model.coinOpeningPrice.observe(viewLifecycleOwner, Observer { openingPrice ->
-            if (openingPrice != null) {
-                binding.cvOrderBook
-            }
-        })
-
         model.orderBookData.observe(viewLifecycleOwner, Observer { orderBookData ->
             if (orderBookData != null) {
                 binding.cvOrderBook.update(orderBookData.unitDataList)
@@ -111,6 +108,27 @@ class OrderBookFragment : BaseFragment() {
                 }
             }
         })
+
+        model.coinTradePrice.observe(viewLifecycleOwner, Observer { tradePrice ->
+            if (tradePrice != null) {
+                model.setOrderUnitPrice(tradePrice)
+            }
+        })
+
+        model.orderQuantity.observe(viewLifecycleOwner, Observer { quantity ->
+            binding.tvOrderBookQuantity.text = ConvertUtil.coinQuantity2string(quantity)
+        })
+
+        model.orderUnitPrice.observe(viewLifecycleOwner, Observer { unitPrice ->
+            val withDecimalPoint = model.coinTradePrice.value?.let { it < 100 } ?: false
+            binding.tvOrderBookUnitPrice.text =
+                ConvertUtil.tradePrice2string(unitPrice, pWithDecimalPoint = withDecimalPoint)
+        })
+
+        model.orderTotalPrice.observe(viewLifecycleOwner, Observer { totalPrice ->
+            binding.tvOrderBookTotalPrice.text =
+                ConvertUtil.price2krwString(totalPrice, pWithKRW = true)
+        })
     }
 
     private fun init() {
@@ -118,24 +136,64 @@ class OrderBookFragment : BaseFragment() {
             cvOrderBook.post {
                 cvOrderBook.fitCenter()
             }
+            tvOrderBookCanOrder.text =
+                ConvertUtil.price2krwString(KubitSession.KRW, pWithKRW = true)
 
-            binding.tvOrderBookTabAsk.setOnClickListener {
+            tvOrderBookTabAsk.setOnClickListener {
                 model.setTransactionType(TransactionType.ASK)
             }
-            binding.tvOrderBookTabBid.setOnClickListener {
+            tvOrderBookTabBid.setOnClickListener {
                 model.setTransactionType(TransactionType.BID)
             }
-            binding.ivOrderBookDesignatedPrice.setOnClickListener {
+            ivOrderBookDesignatedPrice.setOnClickListener {
                 model.setTransactionMethod(TransactionMethod.DESIGNATED_PRICE)
             }
-            binding.tvOrderBookDesignatedPrice.setOnClickListener {
+            tvOrderBookDesignatedPrice.setOnClickListener {
                 model.setTransactionMethod(TransactionMethod.DESIGNATED_PRICE)
             }
-            binding.ivOrderBookMarketPrice.setOnClickListener {
+            ivOrderBookMarketPrice.setOnClickListener {
                 model.setTransactionMethod(TransactionMethod.MARKET_PRICE)
             }
-            binding.tvOrderBookMarketPrice.setOnClickListener {
+            tvOrderBookMarketPrice.setOnClickListener {
                 model.setTransactionMethod(TransactionMethod.MARKET_PRICE)
+            }
+
+            clOrderBookQuantity.setOnClickListener {
+                EnterPriceDialog(
+                    priceType = EnterPriceDialog.Type.QUANTITY,
+                    initUnitPrice = model.orderUnitPrice.value ?: 0.0,
+                    initQuantity = model.orderQuantity.value ?: 0.0,
+                    initTotalPrice = model.orderTotalPrice.value ?: 0.0
+                ) { priceType, value ->
+                    model.setOrderQuantity(value)
+                }.show(childFragmentManager, null)
+            }
+            clOrderBookUnitPrice.setOnClickListener {
+                EnterPriceDialog(
+                    priceType = EnterPriceDialog.Type.UNIT_PRICE,
+                    initUnitPrice = model.orderUnitPrice.value ?: 0.0,
+                    initQuantity = model.orderQuantity.value ?: 0.0,
+                    initTotalPrice = model.orderTotalPrice.value ?: 0.0
+                ) { priceType, value ->
+                    model.setOrderUnitPrice(value)
+                }.show(childFragmentManager, null)
+            }
+            clOrderBookTotalPrice.setOnClickListener {
+                EnterPriceDialog(
+                    priceType = EnterPriceDialog.Type.TOTAL_PRICE,
+                    initUnitPrice = model.orderUnitPrice.value ?: 0.0,
+                    initQuantity = model.orderQuantity.value ?: 0.0,
+                    initTotalPrice = model.orderTotalPrice.value ?: 0.0
+                ) { priceType, value ->
+                    model.setOrderTotalPrice(value)
+                }.show(childFragmentManager, null)
+            }
+
+            tvOrderBookClear.setOnClickListener {
+
+            }
+            tvOrderBookConfirm.setOnClickListener {
+
             }
         }
     }
@@ -148,15 +206,13 @@ class OrderBookFragment : BaseFragment() {
             tvOrderBookTabBid.setTextColor(textColor)
             tvOrderBookTabBid.setBackgroundColor(
                 ContextCompat.getColor(
-                    requireContext(),
-                    R.color.border
+                    requireContext(), R.color.border
                 )
             )
             tvOrderBookTabAsk.setTextColor(coinBlueColor)
             tvOrderBookTabAsk.setBackgroundColor(
                 ContextCompat.getColor(
-                    requireContext(),
-                    R.color.background
+                    requireContext(), R.color.background
                 )
             )
 
@@ -173,15 +229,13 @@ class OrderBookFragment : BaseFragment() {
             tvOrderBookTabBid.setTextColor(coinRedColor)
             tvOrderBookTabBid.setBackgroundColor(
                 ContextCompat.getColor(
-                    requireContext(),
-                    R.color.background
+                    requireContext(), R.color.background
                 )
             )
             tvOrderBookTabAsk.setTextColor(textColor)
             tvOrderBookTabAsk.setBackgroundColor(
                 ContextCompat.getColor(
-                    requireContext(),
-                    R.color.border
+                    requireContext(), R.color.border
                 )
             )
 
@@ -199,10 +253,7 @@ class OrderBookFragment : BaseFragment() {
             ivOrderBookMarketPrice.setImageResource(R.drawable.icon_radio_unselected)
 
             clOrderBookQuantity.visibility = View.VISIBLE
-            clOrderBookQuantityPercent.visibility = View.VISIBLE
-            clOrderBookPrice.visibility = View.VISIBLE
-            clOrderBookPriceMinus.visibility = View.VISIBLE
-            clOrderBookPricePlus.visibility = View.VISIBLE
+            clOrderBookUnitPrice.visibility = View.VISIBLE
         }
     }
 
@@ -215,10 +266,7 @@ class OrderBookFragment : BaseFragment() {
             ivOrderBookMarketPrice.setImageResource(R.drawable.icon_radio_selected)
 
             clOrderBookQuantity.visibility = View.GONE
-            clOrderBookQuantityPercent.visibility = View.GONE
-            clOrderBookPrice.visibility = View.GONE
-            clOrderBookPriceMinus.visibility = View.GONE
-            clOrderBookPricePlus.visibility = View.GONE
+            clOrderBookUnitPrice.visibility = View.GONE
         }
     }
 

@@ -69,7 +69,8 @@ open class BaseViewModel : ViewModel() {
             // Transaction Activity ViewModel
             else if (modelClass.isAssignableFrom(TransactionViewModel::class.java)) {
                 return TransactionViewModel(
-                    TransactionRepository(application)
+                    TransactionRepository(application),
+                    KubitRepository(application)
                 ) as T
             }
             // Login Activity ViewModel

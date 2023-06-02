@@ -180,6 +180,9 @@ class TransactionActivity : BaseActivity() {
 
         binding.apply {
             tvTransactionName.text = "${pSelectedCoinData.nameKor}(${pSelectedCoinData.market})"
+            ivTransactionBack.setOnClickListener {
+                finish()
+            }
 
             tvTransactionTabOrder.setOnClickListener {
                 model.setTabRouter(TransactionTabRouter.ORDER_BOOK)
