@@ -4,16 +4,23 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.kubit.android.base.BaseViewModel
+import com.kubit.android.common.session.KubitSession
 import com.kubit.android.common.util.DLog
+import com.kubit.android.intro.viewmodel.IntroViewModel
 import com.kubit.android.model.data.chart.ChartDataWrapper
 import com.kubit.android.model.data.chart.ChartMainIndicator
 import com.kubit.android.model.data.chart.ChartUnit
 import com.kubit.android.model.data.coin.CoinSnapshotData
 import com.kubit.android.model.data.coin.KubitCoinInfoData
+import com.kubit.android.model.data.login.LoginSessionData
+import com.kubit.android.model.data.network.KubitNetworkResult
+import com.kubit.android.model.data.network.NetworkResult
 import com.kubit.android.model.data.orderbook.OrderBookData
 import com.kubit.android.model.data.route.TransactionTabRouter
 import com.kubit.android.model.data.transaction.TransactionMethod
 import com.kubit.android.model.data.transaction.TransactionType
+import com.kubit.android.model.data.wallet.WalletData
+import com.kubit.android.model.data.wallet.WalletOverall
 import com.kubit.android.model.repository.KubitRepository
 import com.kubit.android.model.repository.TransactionRepository
 import kotlinx.coroutines.launch
@@ -25,6 +32,9 @@ class TransactionViewModel(
 ) : BaseViewModel() {
 
     private lateinit var selectedCoinData: KubitCoinInfoData
+
+    private lateinit var _selectedWallet: WalletData
+    val selectedWallet: WalletData get() = _selectedWallet
 
     private val _tabRouter: MutableLiveData<TransactionTabRouter> = MutableLiveData()
     val tabRouter: LiveData<TransactionTabRouter> get() = _tabRouter
@@ -46,22 +56,40 @@ class TransactionViewModel(
     val coinTradePrice: LiveData<Double?> get() = _coinTradePrice
 
     /**
-     * 사용자가 입력한 코인의 주문 수량
+     * 사용자가 입력한 코인의 매수 주문 수량
      */
-    private var _orderQuantity: MutableLiveData<Double> = MutableLiveData(0.0)
-    val orderQuantity: LiveData<Double> get() = _orderQuantity
+    private val _bidOrderQuantity: MutableLiveData<Double> = MutableLiveData(0.0)
+    val bidOrderQuantity: LiveData<Double> get() = _bidOrderQuantity
 
     /**
-     * 사용자가 입력한 코인 1개당 가격
+     * 사용자가 입력한 코인의 매도 주문 수량
      */
-    private var _orderUnitPrice: MutableLiveData<Double> = MutableLiveData(0.0)
-    val orderUnitPrice: LiveData<Double> get() = _orderUnitPrice
+    private val _askOrderQuantity: MutableLiveData<Double> = MutableLiveData(0.0)
+    val askOrderQuantity: LiveData<Double> get() = _askOrderQuantity
 
     /**
-     * 지정가 거래에서의 총액
+     * 매수 주문에서의 코인 1개당 가격
      */
-    private val _orderTotalPrice: MutableLiveData<Double> = MutableLiveData(0.0)
-    val orderTotalPrice: LiveData<Double> get() = _orderTotalPrice
+    private val _bidOrderUnitPrice: MutableLiveData<Double> = MutableLiveData(0.0)
+    val bidOrderUnitPrice: LiveData<Double> get() = _bidOrderUnitPrice
+
+    /**
+     * 매도 주문에서의 코인 1개당 가격
+     */
+    private val _askOrderUnitPrice: MutableLiveData<Double> = MutableLiveData(0.0)
+    val askOrderUnitPrice: LiveData<Double> get() = _askOrderUnitPrice
+
+    /**
+     * 매수 지정가 거래에서의 총액
+     */
+    private val _bidOrderTotalPrice: MutableLiveData<Double> = MutableLiveData(0.0)
+    val bidOrderTotalPrice: LiveData<Double> get() = _bidOrderTotalPrice
+
+    /**
+     * 매도 지정가 거래에서의 총액
+     */
+    private val _askOrderTotalPrice: MutableLiveData<Double> = MutableLiveData(0.0)
+    val askOrderTotalPrice: LiveData<Double> get() = _askOrderTotalPrice
 
     /**
      * 코인 호가 데이터
@@ -77,11 +105,24 @@ class TransactionViewModel(
     val transactionType: LiveData<TransactionType> get() = _transactionType
 
     /**
-     * 지정가 거래인지 시장가 거래인지
+     * 매수 - 지정가 거래인지 시장가 거래인지
      */
-    private val _transactionMethod: MutableLiveData<TransactionMethod> =
+    private val _bidTransactionMethod: MutableLiveData<TransactionMethod> =
         MutableLiveData(TransactionMethod.DESIGNATED_PRICE)
-    val transactionMethod: LiveData<TransactionMethod> get() = _transactionMethod
+    val bidTransactionMethod: LiveData<TransactionMethod> get() = _bidTransactionMethod
+
+    /**
+     * 매도 - 지정가 거래인지 시장가 거래인지
+     */
+    private val _askTransactionMethod: MutableLiveData<TransactionMethod> =
+        MutableLiveData(TransactionMethod.DESIGNATED_PRICE)
+    val askTransactionMethod: LiveData<TransactionMethod> get() = _askTransactionMethod
+
+    /**
+     * 거래 요청 이후의 KRW 및 Wallet 데이터
+     */
+    private val _transactionResult: MutableLiveData<WalletOverall?> = MutableLiveData(null)
+    val transactionResult: LiveData<WalletOverall?> get() = _transactionResult
     // endregion 호가창 화면 관련 변수
 
     // region 차트 화면 관련 변수
@@ -112,8 +153,28 @@ class TransactionViewModel(
     // endregion 차트 화면 관련 변수
 
     fun initSelectedCoinData(pSelectedCoinData: KubitCoinInfoData) {
-        setProgressFlag(true)
         selectedCoinData = pSelectedCoinData
+
+        val walletList = KubitSession.walletList
+        for (idx in walletList.indices) {
+            val wallet = walletList[idx]
+            if (wallet.market == selectedCoinData.market) {
+                _selectedWallet = wallet
+                break
+            }
+        }
+
+        if (!this::_selectedWallet.isInitialized) {
+            _selectedWallet = WalletData(
+                market = selectedCoinData.market,
+                nameKor = selectedCoinData.nameKor,
+                nameEng = selectedCoinData.nameEng,
+                quantityAvailable = 0.0,
+                quantity = 0.0,
+                totalPrice = 0.0
+            )
+        }
+
         requestTickerData()
     }
 
@@ -129,53 +190,125 @@ class TransactionViewModel(
         }
     }
 
-    fun setTransactionMethod(pTransactionMethod: TransactionMethod) {
-        if (transactionMethod.value != pTransactionMethod) {
-            _transactionMethod.value = pTransactionMethod
+    fun setBidTransactionMethod(pTransactionMethod: TransactionMethod) {
+        if (bidTransactionMethod.value != pTransactionMethod) {
+            _bidTransactionMethod.value = pTransactionMethod
+        }
+    }
+
+    fun setAskTransactionMethod(pTransactionMethod: TransactionMethod) {
+        if (askTransactionMethod.value != pTransactionMethod) {
+            _askTransactionMethod.value = pTransactionMethod
         }
     }
 
     /**
-     * 지정가 거래에서의 주문 수량을 설정하는 함수
+     * 매수 지정가 거래에서의 주문 수량을 설정하는 함수
      *
      * @param pOrderQuantity    주문 수량
      */
-    fun setOrderQuantity(pOrderQuantity: Double) {
-        DLog.d(TAG, "setOrderQuantity(), pOrderQuantity=$pOrderQuantity")
-        _orderQuantity.postValue(pOrderQuantity)
-        _orderTotalPrice.postValue(pOrderQuantity * (orderUnitPrice.value ?: 0.0))
+    fun setBidOrderQuantity(pOrderQuantity: Double) {
+        DLog.d(TAG, "setBidOrderQuantity(), pOrderQuantity=$pOrderQuantity")
+        _bidOrderQuantity.postValue(pOrderQuantity)
+        _bidOrderTotalPrice.postValue(pOrderQuantity * (bidOrderUnitPrice.value ?: 0.0))
     }
 
     /**
-     * 지정가 거래에서의 코인 1개당 가격을 설정하는 함수
+     * 매도 지정가 거래에서의 주문 수량을 설정하는 함수
+     *
+     * @param pOrderQuantity    주문 수량
+     */
+    fun setAskOrderQuantity(pOrderQuantity: Double) {
+        DLog.d(TAG, "setAskOrderQuantity(), pOrderQuantity=$pOrderQuantity")
+        _askOrderQuantity.postValue(pOrderQuantity)
+        _askOrderTotalPrice.postValue(pOrderQuantity * (askOrderUnitPrice.value ?: 0.0))
+    }
+
+    /**
+     * 매수 - 지정가 거래에서의 코인 1개당 가격을 설정하는 함수
      *
      * @param pOrderUnitPrice   코인 1개당 가격
      */
-    fun setOrderUnitPrice(pOrderUnitPrice: Double) {
-        DLog.d(TAG, "setOrderUnitPrice(), pOrderUnitPrice=$pOrderUnitPrice")
-        _orderUnitPrice.postValue(pOrderUnitPrice)
-        _orderTotalPrice.postValue((orderQuantity.value ?: 0.0) * pOrderUnitPrice)
+    fun setBidOrderUnitPrice(pOrderUnitPrice: Double) {
+        DLog.d(TAG, "setBidOrderUnitPrice(), pOrderUnitPrice=$pOrderUnitPrice")
+        _bidOrderUnitPrice.postValue(pOrderUnitPrice)
+        _bidOrderTotalPrice.postValue((bidOrderQuantity.value ?: 0.0) * pOrderUnitPrice)
     }
 
     /**
-     * 총 주문 금액을 설정하는 함수
+     * 매도 - 지정가 거래에서의 코인 1개당 가격을 설정하는 함수
+     *
+     * @param pOrderUnitPrice   코인 1개당 가격
+     */
+    fun setAskOrderUnitPrice(pOrderUnitPrice: Double) {
+        DLog.d(TAG, "setAskOrderUnitPrice(), pOrderUnitPrice=$pOrderUnitPrice")
+        _askOrderUnitPrice.postValue(pOrderUnitPrice)
+        _askOrderTotalPrice.postValue((askOrderQuantity.value ?: 0.0) * pOrderUnitPrice)
+    }
+
+    /**
+     * 매수 총 주문 금액을 설정하는 함수
      *
      * @param pOrderTotalPrice  총 주문 금액
      */
-    fun setOrderTotalPrice(pOrderTotalPrice: Double) {
-        DLog.d(TAG, "setOrderTotalPrice(), pOrderTotalPrice=$pOrderTotalPrice")
-        _orderTotalPrice.postValue(pOrderTotalPrice)
+    fun setBidOrderTotalPrice(pOrderTotalPrice: Double) {
+        DLog.d(TAG, "setBidOrderTotalPrice(), pOrderTotalPrice=$pOrderTotalPrice")
+        _bidOrderTotalPrice.postValue(pOrderTotalPrice)
 
-        orderUnitPrice.value?.let { unitPrice ->
+        bidOrderUnitPrice.value?.let { unitPrice ->
             if (unitPrice > 0) {
                 val quantity = (pOrderTotalPrice / unitPrice).toInt().toDouble()
-                _orderQuantity.postValue(quantity)
+                _bidOrderQuantity.postValue(quantity)
             } else {
                 val newUnitPrice = coinTradePrice.value!!
-                _orderUnitPrice.postValue(newUnitPrice)
+                _bidOrderUnitPrice.postValue(newUnitPrice)
                 val quantity = (pOrderTotalPrice / newUnitPrice).toInt().toDouble()
-                _orderQuantity.postValue(quantity)
+                _bidOrderQuantity.postValue(quantity)
             }
+        }
+    }
+
+    /**
+     * 매도 총 주문 금액을 설정하는 함수
+     *
+     * @param pOrderTotalPrice  총 주문 금액
+     */
+    fun setAskOrderTotalPrice(pOrderTotalPrice: Double) {
+        DLog.d(TAG, "setAskOrderTotalPrice(), pOrderTotalPrice=$pOrderTotalPrice")
+        _askOrderTotalPrice.postValue(pOrderTotalPrice)
+
+        askOrderUnitPrice.value?.let { unitPrice ->
+            if (unitPrice > 0) {
+                val quantity = (pOrderTotalPrice / unitPrice).toInt().toDouble()
+                _askOrderQuantity.postValue(quantity)
+            } else {
+                val newUnitPrice = coinTradePrice.value!!
+                _askOrderUnitPrice.postValue(newUnitPrice)
+                val quantity = (pOrderTotalPrice / newUnitPrice).toInt().toDouble()
+                _askOrderQuantity.postValue(quantity)
+            }
+        }
+    }
+
+    /**
+     * 사용자가 설정한 매수 금액 및 수량을 초기화하는 함수
+     */
+    fun clearBidPriceAndQuantity() {
+        _bidOrderQuantity.postValue(0.0)
+        _bidOrderTotalPrice.postValue(0.0)
+        coinTradePrice.value?.let { tradePrice ->
+            _bidOrderUnitPrice.postValue(tradePrice)
+        }
+    }
+
+    /**
+     * 사용자가 설정한 매도 금액 및 수량을 초기화하는 함수
+     */
+    fun clearAskPriceAndQuantity() {
+        _askOrderQuantity.postValue(0.0)
+        _askOrderTotalPrice.postValue(0.0)
+        coinTradePrice.value?.let { tradePrice ->
+            _askOrderUnitPrice.postValue(tradePrice)
         }
     }
 
@@ -300,6 +433,262 @@ class TransactionViewModel(
         }
     }
 
+    private fun requestRefreshToken(
+        onSuccessListener: (newGrantType: String, newAccessToken: String) -> Unit
+    ) {
+        viewModelScope.launch {
+            when (val refreshTokenResult =
+                kubitRepository.makeRefreshTokenRequest(KubitSession.refreshToken)) {
+                is NetworkResult.Success<LoginSessionData> -> {
+                    val loginSession = refreshTokenResult.data
+                    DLog.d(TAG, "new LoginSession is $loginSession")
+                    KubitSession.updateLoginSession(
+                        pGrantType = loginSession.grantType,
+                        pAccessToken = loginSession.accessToken,
+                        pRefreshToken = loginSession.refreshToken
+                    )
+                    onSuccessListener(loginSession.grantType, loginSession.accessToken)
+                }
+
+                is NetworkResult.Fail -> {
+                    DLog.e(TAG, refreshTokenResult.failMsg)
+                }
+
+                is NetworkResult.Error -> {
+                    DLog.e(TAG, refreshTokenResult.exception.message, refreshTokenResult.exception)
+                }
+            }
+        }
+    }
+
+    /**
+     * 지정가 매수 거래를 요청하는 함수
+     */
+    fun requestDesignatedBid(): Boolean {
+        val krw = KubitSession.KRW
+        val marketCode = coinSnapshotData.value?.market
+        val quantity = bidOrderQuantity.value
+        val unitPrice = bidOrderUnitPrice.value
+        val totalPrice = bidOrderTotalPrice.value
+
+        return if (marketCode != null && quantity != null && unitPrice != null && totalPrice != null) {
+            val fee = totalPrice * FEE_RATIO
+            DLog.d("${TAG}_requestBidTransaction", "krw=$krw, totalPrice=$totalPrice, fee=$fee")
+
+            if ((totalPrice + fee) <= krw) {
+                setProgressFlag(true)
+                viewModelScope.launch {
+                    val result = kubitRepository.makeDesignatedRequest(
+                        pTransactionType = "BID",
+                        pMarketCode = marketCode,
+                        pRequestPrice = unitPrice,
+                        pQuantity = quantity,
+                        pGrantType = KubitSession.grantType,
+                        pAccessToken = KubitSession.accessToken
+                    )
+
+                    when (result) {
+                        is KubitNetworkResult.Success<WalletOverall> -> {
+                            DLog.d("${TAG}_requestDesignatedBid", result.data.toString())
+                            KubitSession
+                            _transactionResult.postValue(result.data)
+                        }
+
+                        is KubitNetworkResult.Refresh -> {
+                            requestRefreshToken { newGrantType, newAccessToken ->
+                                requestDesignatedBid()
+                            }
+                        }
+
+                        is KubitNetworkResult.Fail -> {
+                            DLog.e(TAG, result.failMsg)
+                            setApiFailMsg(result.failMsg)
+                        }
+
+                        is KubitNetworkResult.Error -> {
+                            DLog.e(TAG, result.exception.message, result.exception)
+                            setExceptionData(result.exception)
+                        }
+                    }
+                }
+
+                true
+            } else {
+                false
+            }
+        } else {
+            false
+        }
+    }
+
+    /**
+     * 지정가 매도 거래를 요청하는 함수
+     */
+    fun requestDesignatedAsk(): Boolean {
+        val hasQuantity = selectedWallet.quantityAvailable
+        val marketCode = coinSnapshotData.value?.market
+        val quantity = askOrderQuantity.value
+        val unitPrice = askOrderUnitPrice.value
+        val totalPrice = askOrderTotalPrice.value
+
+        return if (marketCode != null && quantity != null && unitPrice != null && totalPrice != null) {
+            if (quantity <= hasQuantity) {
+                setProgressFlag(true)
+                viewModelScope.launch {
+                    val result = kubitRepository.makeDesignatedRequest(
+                        pTransactionType = "ASK",
+                        pMarketCode = marketCode,
+                        pRequestPrice = unitPrice,
+                        pQuantity = quantity,
+                        pGrantType = KubitSession.grantType,
+                        pAccessToken = KubitSession.accessToken
+                    )
+
+                    when (result) {
+                        is KubitNetworkResult.Success<WalletOverall> -> {
+                            DLog.d("${TAG}_requestDesignatedAsk", result.data.toString())
+                            KubitSession
+                            _transactionResult.postValue(result.data)
+                        }
+
+                        is KubitNetworkResult.Refresh -> {
+                            requestRefreshToken { newGrantType, newAccessToken ->
+                                requestDesignatedBid()
+                            }
+                        }
+
+                        is KubitNetworkResult.Fail -> {
+                            DLog.e(TAG, result.failMsg)
+                            setApiFailMsg(result.failMsg)
+                        }
+
+                        is KubitNetworkResult.Error -> {
+                            DLog.e(TAG, result.exception.message, result.exception)
+                            setExceptionData(result.exception)
+                        }
+                    }
+                }
+
+                true
+            } else {
+                false
+            }
+        } else {
+            false
+        }
+    }
+
+    /**
+     * 시장가 매수 거래를 요청하는 함수
+     */
+    fun requestMarketBid(): Boolean {
+        val krw = KubitSession.KRW
+        val tradePrice = coinSnapshotData.value?.tradePrice
+        val marketCode = coinSnapshotData.value?.market
+        val totalPrice = bidOrderTotalPrice.value
+
+        return if (marketCode != null && tradePrice != null && totalPrice != null) {
+            val fee = totalPrice * FEE_RATIO
+            DLog.d("${TAG}_requestBidTransaction", "krw=$krw, totalPrice=$totalPrice, fee=$fee")
+
+            if ((totalPrice + fee) <= krw) {
+                setProgressFlag(true)
+                viewModelScope.launch {
+                    val result = kubitRepository.makeMarketBidRequest(
+                        pMarketCode = marketCode,
+                        pCurrentPrice = tradePrice,
+                        pTotalPrice = totalPrice,
+                        pGrantType = KubitSession.grantType,
+                        pAccessToken = KubitSession.accessToken
+                    )
+
+                    when (result) {
+                        is KubitNetworkResult.Success<WalletOverall> -> {
+                            DLog.d("${TAG}_requestMarketBid", result.data.toString())
+                            _transactionResult.postValue(result.data)
+                        }
+
+                        is KubitNetworkResult.Refresh -> {
+                            requestRefreshToken { newGrantType, newAccessToken ->
+                                requestMarketBid()
+                            }
+                        }
+
+                        is KubitNetworkResult.Fail -> {
+                            DLog.e(TAG, result.failMsg)
+                            setApiFailMsg(result.failMsg)
+                        }
+
+                        is KubitNetworkResult.Error -> {
+                            DLog.e(TAG, result.exception.message, result.exception)
+                            setExceptionData(result.exception)
+                        }
+                    }
+                }
+
+                true
+            } else {
+                false
+            }
+        } else {
+            false
+        }
+    }
+
+    /**
+     * 시장가 매도 거래를 요청하는 함수
+     */
+    fun requestMarketAsk(): Boolean {
+        val hasQuantity = selectedWallet.quantityAvailable
+        val tradePrice = coinSnapshotData.value?.tradePrice
+        val marketCode = coinSnapshotData.value?.market
+        val quantity = askOrderQuantity.value
+
+        return if (tradePrice != null && marketCode != null && quantity != null) {
+            if (quantity <= hasQuantity) {
+                setProgressFlag(true)
+                viewModelScope.launch {
+                    val result = kubitRepository.makeMarketAskRequest(
+                        pMarketCode = marketCode,
+                        pCurrentPrice = tradePrice,
+                        pQuantity = quantity,
+                        pGrantType = KubitSession.grantType,
+                        pAccessToken = KubitSession.accessToken
+                    )
+
+                    when (result) {
+                        is KubitNetworkResult.Success<WalletOverall> -> {
+                            DLog.d("${TAG}_requestMarketBid", result.data.toString())
+                            _transactionResult.postValue(result.data)
+                        }
+
+                        is KubitNetworkResult.Refresh -> {
+                            requestRefreshToken { newGrantType, newAccessToken ->
+                                requestMarketBid()
+                            }
+                        }
+
+                        is KubitNetworkResult.Fail -> {
+                            DLog.e(TAG, result.failMsg)
+                            setApiFailMsg(result.failMsg)
+                        }
+
+                        is KubitNetworkResult.Error -> {
+                            DLog.e(TAG, result.exception.message, result.exception)
+                            setExceptionData(result.exception)
+                        }
+                    }
+                }
+
+                true
+            } else {
+                false
+            }
+        } else {
+            false
+        }
+    }
+
     fun requestCoinChart() {
         DLog.d(TAG, "requestCoinChart() is called!")
         viewModelScope.launch {
@@ -331,6 +720,8 @@ class TransactionViewModel(
 
     companion object {
         private const val TAG: String = "TransactionViewModel"
+
+        private const val FEE_RATIO: Double = 0.0005
     }
 
 }

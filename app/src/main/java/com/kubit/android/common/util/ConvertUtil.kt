@@ -110,6 +110,18 @@ object ConvertUtil {
     }
 
     /**
+     * 코인 보유 수량을 문자열로 변환하는 함수
+     *
+     * @param pQuantity     코인 보유 수량
+     * @param pMarketCode   종목 구분 코드
+     */
+    fun coinQuantity2string(pQuantity: Double, pMarket: String): String {
+        return "${coinQuantityFormatter.format(pQuantity)} ${
+            pMarket.split('-').getOrNull(1) ?: ""
+        }".trim()
+    }
+
+    /**
      * 투자내역 화면의 보유자산 포트폴리오 파이 차트 라벨을 만들 때 사용함
      *
      * @param pRatio    코인의 보유 비중

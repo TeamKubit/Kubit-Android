@@ -67,10 +67,19 @@ class EnterPriceDialog(
             }
         }
 
+    private val regex: Regex = Regex("0+")
     private var _dotExist: Boolean = when (priceType) {
-        Type.UNIT_PRICE -> initUnitPrice.toString().contains('.')
-        Type.QUANTITY -> initQuantity.toString().contains('.')
-        Type.TOTAL_PRICE -> initTotalPrice.toString().contains(',')
+        Type.UNIT_PRICE -> initUnitPrice.toString().split('.').let { list ->
+            if (list.size < 2) false else !regex.matches(list[1])
+        }
+
+        Type.QUANTITY -> initQuantity.toString().split('.').let { list ->
+            if (list.size < 2) false else !regex.matches(list[1])
+        }
+
+        Type.TOTAL_PRICE -> initTotalPrice.toString().split('.').let { list ->
+            if (list.size < 2) false else !regex.matches(list[1])
+        }
     }
     private val dotExist: Boolean get() = _dotExist
 
@@ -207,6 +216,7 @@ class EnterPriceDialog(
     private fun appendNumber(pNum: Int) {
         when (priceType) {
             Type.UNIT_PRICE -> {
+                DLog.d("${TAG}_appendNumber", "dotExist=$dotExist, strUnitPrice=$strUnitPrice")
                 if (!dotExist) {
                     if (strUnitPrice == "0") {
                         strUnitPrice = pNum.toString()
@@ -217,6 +227,7 @@ class EnterPriceDialog(
             }
 
             Type.QUANTITY -> {
+                DLog.d("${TAG}_appendNumber", "dotExist=$dotExist, strQuantity=$strQuantity")
                 if (strQuantity == "0") {
                     strQuantity = pNum.toString()
                 } else {
@@ -225,6 +236,7 @@ class EnterPriceDialog(
             }
 
             Type.TOTAL_PRICE -> {
+                DLog.d("${TAG}_appendNumber", "dotExist=$dotExist, strTotalPrice=$strTotalPrice")
                 if (!dotExist) {
                     if (strTotalPrice == "0") {
                         strTotalPrice = pNum.toString()

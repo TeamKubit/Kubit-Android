@@ -508,6 +508,59 @@ class JsonParserUtil {
         }
     }
 
+    fun getTransactionResponse(jsonRoot: JSONObject): KubitNetworkResult<WalletOverall> {
+        val resultCode = getInt(jsonRoot, KEY_RESULT_CODE)
+        val resultMsg = getString(jsonRoot, KEY_RESULT_MSG)
+
+        // Token 유효기간 만료
+        if (resultCode == 403) {
+            return KubitNetworkResult.Refresh(KubitSession.refreshToken)
+        }
+        // 그 외의 오류
+        else if (resultCode != 200) {
+            return KubitNetworkResult.Fail(resultMsg)
+        }
+
+        val detailObj = getJsonObject(jsonRoot, KEY_DETAIL)
+        return if (detailObj != null) {
+            val krw = getDouble(detailObj, KEY_MONEY)
+            val walletArray = getJSONArray(detailObj, KEY_WALLET)
+
+            val walletList: ArrayList<WalletData> = arrayListOf()
+            if (walletArray != null) {
+                for (idx in 0 until walletArray.length()) {
+                    if (!walletArray.isNull(idx)) {
+                        val obj = walletArray.getJSONObject(idx)
+
+                        if (obj != null) {
+                            val market = getString(obj, KEY_MARKET_CODE)
+                            val nameKor = getString(obj, KEY_KOREAN_NAME)
+                            val nameEng = getString(obj, KEY_ENGLISH_NAME)
+                            val quantityAvailable = getDouble(obj, KEY_QUANTITY_AVAILABLE)
+                            val quantity = getDouble(obj, KEY_QUANTITY)
+                            val totalPrice = getDouble(obj, KEY_TOTAL_PRICE)
+
+                            walletList.add(
+                                WalletData(
+                                    market,
+                                    nameKor,
+                                    nameEng,
+                                    quantityAvailable,
+                                    quantity,
+                                    totalPrice
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+
+            KubitNetworkResult.Success(WalletOverall(krw, walletList))
+        } else {
+            KubitNetworkResult.Fail(resultMsg)
+        }
+    }
+
     companion object {
         private const val TAG: String = "JsonParserUtil"
 

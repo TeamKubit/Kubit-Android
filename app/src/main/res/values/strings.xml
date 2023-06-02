@@ -11,6 +11,9 @@
     <string name="toast_msg_logout_success">로그아웃 되었습니다.</string>
     <string name="toast_msg_login_fail">ID 또는 PW를 확인해 주세요.</string>
     <string name="api_connection_fail_msg">서버로부터 응답이 없습니다. 잠시 후에 다시 시도해 주세요.</string>
+    <string name="toast_msg_krw_short">매수 금액이 부족합니다.</string>
+    <string name="toast_msg_coin_quantity_short">매도 수량이 부족합니다.</string>
+    <string name="toast_msg_order_success">주문이 완료되었습니다.</string>
 
     <string name="bottom_nav_coinList">거래소</string>
     <string name="bottom_nav_investment">투자내역</string>

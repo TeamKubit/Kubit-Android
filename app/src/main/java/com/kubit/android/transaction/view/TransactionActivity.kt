@@ -96,6 +96,26 @@ class TransactionActivity : BaseActivity() {
     }
 
     private fun setObserver() {
+        model.progressFlag.observe(this, Observer { progressFlag ->
+            if (progressFlag) {
+                showProgress()
+            } else {
+                dismissProgress()
+            }
+        })
+
+        model.apiFailMsg.observe(this, Observer { failMsg ->
+            if (failMsg.isNotEmpty()) {
+                model.setProgressFlag(false)
+                showToastMsg(failMsg)
+            }
+        })
+
+        model.exceptionData.observe(this, Observer { exception ->
+            model.setProgressFlag(false)
+            showErrorMsg()
+        })
+
         model.tabRouter.observe(this, Observer { router ->
             DLog.d(TAG, "tabRouter=$router")
             when (router) {
