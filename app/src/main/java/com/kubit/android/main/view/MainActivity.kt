@@ -228,7 +228,7 @@ class MainActivity : BaseActivity() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             when (result.resultCode) {
                 RESULT_OK -> {
-
+                    model.requestWalletOverall()
                 }
 
                 else -> {

@@ -4,6 +4,7 @@ import android.app.Application
 import com.kubit.android.R
 import com.kubit.android.base.BaseNetworkRepository
 import com.kubit.android.common.util.JsonParserUtil
+import com.kubit.android.model.data.exchange.ExchangeRecordData
 import com.kubit.android.model.data.investment.InvestmentNotYetData
 import com.kubit.android.model.data.investment.InvestmentRecordData
 import com.kubit.android.model.data.login.LoginSessionData
@@ -174,14 +175,152 @@ class KubitRepository(
         }
     }
 
+    /**
+     * 입출금 내역 데이터를 요청하는 API를 호출하는 함수
+     *
+     * @param pGrantType    ?
+     * @param pAccessToken  엑세스 토큰
+     */
+    suspend fun makeBankRequest(
+        pGrantType: String,
+        pAccessToken: String
+    ): KubitNetworkResult<List<ExchangeRecordData>> {
+        return withContext(Dispatchers.IO) {
+            val message = sendRequestToKubitServer(
+                KUBIT_API_USER_BANK,
+                hashMapOf(),
+                GET,
+                "$pGrantType $pAccessToken"
+            )
+
+            if (message.isNotEmpty()) {
+                try {
+                    val jsonRoot = JSONObject(message)
+                    jsonParserUtil.getBankResponse(jsonRoot)
+                } catch (e: JSONException) {
+                    KubitNetworkResult.Error(e)
+                }
+            } else {
+                KubitNetworkResult.Fail(
+                    application.getString(
+                        R.string.api_connection_fail_msg
+                    )
+                )
+            }
+        }
+    }
+
+    /**
+     * 입금을 요청하는 API를 호출하는 함수
+     *
+     * @param pDepositPrice     입금 금액
+     * @param pGrantType        ?
+     * @param pAccessToken      엑세스 토큰
+     */
+    suspend fun makeDepositRequest(
+        pDepositPrice: Double,
+        pGrantType: String,
+        pAccessToken: String
+    ): KubitNetworkResult<ExchangeRecordData> {
+        return withContext(Dispatchers.IO) {
+            val hsParams = HashMap<String, String>().apply {
+                put("requestType", "DEPOSIT")
+                put("money", pDepositPrice.toInt().toString())
+            }
+            val message = sendRequestToKubitServer(
+                KUBIT_API_USER_BANK,
+                hsParams,
+                POST,
+                "$pGrantType $pAccessToken"
+            )
+
+            if (message.isNotEmpty()) {
+                try {
+                    val jsonRoot = JSONObject(message)
+                    jsonParserUtil.getExchangeRecordData(jsonRoot)
+                } catch (e: JSONException) {
+                    KubitNetworkResult.Error(e)
+                }
+            } else {
+                KubitNetworkResult.Fail(
+                    application.getString(
+                        R.string.api_connection_fail_msg
+                    )
+                )
+            }
+        }
+    }
+
+    /**
+     * 출금을 요청하는 API를 호출하는 함수
+     *
+     * @param pWithdrawalPrice  출금 금액
+     * @param pGrantType        ?
+     * @param pAccessToken      엑세스 토큰
+     */
+    suspend fun makeWithdrawalRequest(
+        pWithdrawalPrice: Double,
+        pGrantType: String,
+        pAccessToken: String
+    ): KubitNetworkResult<ExchangeRecordData> {
+        return withContext(Dispatchers.IO) {
+            val hsParams = HashMap<String, String>().apply {
+                put("requestType", "WITHDRAW")
+                put("money", pWithdrawalPrice.toInt().toString())
+            }
+            val message = sendRequestToKubitServer(
+                KUBIT_API_USER_BANK,
+                hsParams,
+                POST,
+                "$pGrantType $pAccessToken"
+            )
+
+            if (message.isNotEmpty()) {
+                try {
+                    val jsonRoot = JSONObject(message)
+                    jsonParserUtil.getExchangeRecordData(jsonRoot)
+                } catch (e: JSONException) {
+                    KubitNetworkResult.Error(e)
+                }
+            } else {
+                KubitNetworkResult.Fail(
+                    application.getString(
+                        R.string.api_connection_fail_msg
+                    )
+                )
+            }
+        }
+    }
+
+    /**
+     * 사용자 정보 초기화를 요청하는 함수
+     */
     suspend fun makeResetRequest(
         pGrantType: String,
         pAccessToken: String
-    ): KubitNetworkResult<Double> {
+    ): KubitNetworkResult<WalletOverall> {
         return withContext(Dispatchers.IO) {
-//            val message =
+            val message = sendRequestToKubitServer(
+                KUBIT_API_USER_RESET,
+                hashMapOf(),
+                DELETE,
+                "$pGrantType $pAccessToken"
+            )
 
-            KubitNetworkResult.Fail("TEST")
+            if (message.isNotEmpty()) {
+                try {
+                    val jsonRoot = JSONObject(message)
+                    jsonParserUtil.getWalletOverallFromResetRequest(jsonRoot)
+                } catch (e: JSONException) {
+                    KubitNetworkResult.Error(e)
+                }
+            } else {
+                KubitNetworkResult.Fail(
+                    application.getString(
+                        R.string.api_connection_fail_msg
+                    )
+                )
+            }
         }
     }
 
@@ -344,6 +483,9 @@ class KubitRepository(
             "${KUBIT_API_HOST_URL}transaction/market/bid"
         private const val KUBIT_API_TRANSACTION_MARKET_ASK_URL: String =
             "${KUBIT_API_HOST_URL}transaction/market/ask"
+
+        private const val KUBIT_API_USER_BANK: String = "${KUBIT_API_HOST_URL}user/bank"
+        private const val KUBIT_API_USER_RESET: String = "${KUBIT_API_HOST_URL}user/reset"
     }
 
 }

@@ -9,6 +9,8 @@ import com.kubit.android.model.data.chart.ChartDataWrapper
 import com.kubit.android.model.data.coin.CoinSnapshotData
 import com.kubit.android.model.data.coin.KubitCoinInfoData
 import com.kubit.android.model.data.coin.PriceChangeType
+import com.kubit.android.model.data.exchange.ExchangeRecordData
+import com.kubit.android.model.data.exchange.ExchangeType
 import com.kubit.android.model.data.investment.InvestmentNotYetData
 import com.kubit.android.model.data.investment.InvestmentRecordData
 import com.kubit.android.model.data.investment.NotYetData
@@ -746,6 +748,188 @@ class JsonParserUtil {
         }
     }
 
+    fun getBankResponse(jsonRoot: JSONObject): KubitNetworkResult<List<ExchangeRecordData>> {
+        val resultCode = getInt(jsonRoot, KEY_RESULT_CODE)
+        val resultMsg = getString(jsonRoot, KEY_RESULT_MSG)
+
+        // Token 유효기간 만료
+        if (resultCode == 403) {
+            return KubitNetworkResult.Refresh(KubitSession.refreshToken)
+        }
+        // 그 외의 오류
+        else if (resultCode != 200) {
+            return KubitNetworkResult.Fail(resultMsg)
+        }
+
+        val detailObj = getJsonObject(jsonRoot, KEY_DETAIL)
+        return if (detailObj != null) {
+            val bankList = getJSONArray(detailObj, KEY_BANK_LIST)
+
+            val exchangeRecordList: ArrayList<ExchangeRecordData> = arrayListOf()
+            if (bankList != null) {
+                for (idx in 0 until bankList.length()) {
+                    if (!bankList.isNull(idx)) {
+                        val obj = bankList.getJSONObject(idx)
+
+                        if (obj != null) {
+                            val bankType = getString(obj, KEY_BANK_TYPE)
+                            val krw = getDouble(obj, KEY_MONEY)
+                            val time = getString(obj, KEY_TRADE_AT)
+
+                            when (bankType) {
+                                "DEPOSIT" -> {
+                                    exchangeRecordList.add(
+                                        ExchangeRecordData(
+                                            exchangeType = ExchangeType.DEPOSIT,
+                                            krw = krw,
+                                            time = time
+                                        )
+                                    )
+                                }
+
+                                "WITHDRAW" -> {
+                                    exchangeRecordList.add(
+                                        ExchangeRecordData(
+                                            exchangeType = ExchangeType.WITHDRAWAL,
+                                            krw = krw,
+                                            time = time
+                                        )
+                                    )
+                                }
+
+                                else -> {
+                                    DLog.e(TAG, "Unrecognized ExchangeType, $obj")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            KubitNetworkResult.Success(exchangeRecordList)
+        } else {
+            KubitNetworkResult.Fail(resultMsg)
+        }
+    }
+
+    fun getExchangeRecordData(jsonRoot: JSONObject): KubitNetworkResult<ExchangeRecordData> {
+        val resultCode = getInt(jsonRoot, KEY_RESULT_CODE)
+        val resultMsg = getString(jsonRoot, KEY_RESULT_MSG)
+
+        // Token 유효기간 만료
+        if (resultCode == 403) {
+            return KubitNetworkResult.Refresh(KubitSession.refreshToken)
+        }
+        // 그 외의 오류
+        else if (resultCode != 200) {
+            return KubitNetworkResult.Fail(resultMsg)
+        }
+
+        val detailObj = getJsonObject(jsonRoot, KEY_DETAIL)
+        return if (detailObj != null) {
+            val bankObj = getJsonObject(detailObj, KEY_BANK)
+
+            if (bankObj != null) {
+                val bankType = getString(bankObj, KEY_BANK_TYPE)
+                val krw = getDouble(bankObj, KEY_MONEY)
+                val time = getString(bankObj, KEY_TRADE_AT)
+
+                when (bankType) {
+                    "DEPOSIT" -> {
+                        KubitNetworkResult.Success(
+                            ExchangeRecordData(
+                                exchangeType = ExchangeType.DEPOSIT,
+                                krw = krw,
+                                time = time
+                            )
+                        )
+                    }
+
+                    "WITHDRAW" -> {
+                        KubitNetworkResult.Success(
+                            ExchangeRecordData(
+                                exchangeType = ExchangeType.WITHDRAWAL,
+                                krw = krw,
+                                time = time
+                            )
+                        )
+                    }
+
+                    else -> {
+                        KubitNetworkResult.Fail(resultMsg)
+                    }
+                }
+            } else {
+                KubitNetworkResult.Fail(resultMsg)
+            }
+        } else {
+            KubitNetworkResult.Fail(resultMsg)
+        }
+    }
+
+    fun getWalletOverallFromResetRequest(jsonRoot: JSONObject): KubitNetworkResult<WalletOverall> {
+        val resultCode = getInt(jsonRoot, KEY_RESULT_CODE)
+        val resultMsg = getString(jsonRoot, KEY_RESULT_MSG)
+
+        // Token 유효기간 만료
+        if (resultCode == 403) {
+            return KubitNetworkResult.Refresh(KubitSession.refreshToken)
+        }
+        // 그 외의 오류
+        else if (resultCode != 200) {
+            return KubitNetworkResult.Fail(resultMsg)
+        }
+
+        val detailObj = getJsonObject(jsonRoot, KEY_DETAIL)
+        return if (detailObj != null) {
+            val userObj = getJsonObject(detailObj, KEY_USER)
+
+            if (userObj != null) {
+                val krw = getDouble(userObj, KEY_MONEY)
+                val wallets = getJSONArray(userObj, KEY_WALLETS)
+
+                val walletList = arrayListOf<WalletData>()
+                if (wallets != null) {
+                    for (idx in 0 until wallets.length()) {
+                        if (!wallets.isNull(idx)) {
+                            val obj = wallets.getJSONObject(idx)
+
+                            if (obj != null) {
+                                val market = getString(obj, KEY_MARKET_CODE)
+                                val nameKor = getString(obj, KEY_KOREAN_NAME)
+                                val nameEng = getString(obj, KEY_ENGLISH_NAME)
+                                val quantityAvailable = getDouble(obj, KEY_QUANTITY_AVAILABLE)
+                                val quantity = getDouble(obj, KEY_QUANTITY)
+                                val totalPrice = getDouble(obj, KEY_TOTAL_PRICE)
+
+                                walletList.add(
+                                    WalletData(
+                                        market,
+                                        nameKor,
+                                        nameEng,
+                                        quantityAvailable,
+                                        quantity,
+                                        totalPrice
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+
+                KubitNetworkResult.Success(
+                    WalletOverall(
+                        KRW = krw,
+                        walletList = walletList
+                    )
+                )
+            } else {
+                KubitNetworkResult.Fail(resultMsg)
+            }
+        } else {
+            KubitNetworkResult.Fail(resultMsg)
+        }
+    }
+
     companion object {
         private const val TAG: String = "JsonParserUtil"
 
@@ -819,6 +1003,14 @@ class JsonParserUtil {
         private const val KEY_CHARGE: String = "charge"
         private const val KEY_REQUEST_PRICE: String = "requestPrice"
         private const val KEY_COMPLETE_PRICE: String = "completePrice"
+
+        private const val KEY_BANK_LIST: String = "bank_list"
+        private const val KEY_BANK_TYPE: String = "bank_type"
+        private const val KEY_TRADE_AT: String = "trade_at"
+        private const val KEY_BANK: String = "bank"
+
+        private const val KEY_USER: String = "user"
+        private const val KEY_WALLETS: String = "wallets"
     }
 
 }

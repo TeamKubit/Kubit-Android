@@ -12,6 +12,7 @@ import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Observer
 import com.kubit.android.R
 import com.kubit.android.base.BaseFragment
 import com.kubit.android.coinlist.view.CoinListFragment
@@ -41,10 +42,10 @@ class ProfileFragment : BaseFragment() {
                 when (result.resultCode) {
                     AppCompatActivity.RESULT_OK -> {
                         applyLoginSession()
+                        model.requestWalletOverall()
                     }
 
                     else -> {
-
                     }
                 }
             }
@@ -59,6 +60,7 @@ class ProfileFragment : BaseFragment() {
     ): View {
         _binding = FragmentProfileBinding.inflate(inflater, container, false)
 
+        setObserver()
         init()
 
         return binding.root
@@ -71,6 +73,15 @@ class ProfileFragment : BaseFragment() {
         _loginIntentForResult = null
     }
     // endregion Fragment LifeCycle
+
+    private fun setObserver() {
+        model.resetResult.observe(viewLifecycleOwner, Observer { resetResult ->
+            if (resetResult != null) {
+                model.setProgressFlag(false)
+                showToastMsg(getString(R.string.toast_msg_successful_reset))
+            }
+        })
+    }
 
     private fun init() {
         applyLoginSession()
@@ -149,8 +160,7 @@ class ProfileFragment : BaseFragment() {
             pMsg = getString(R.string.dialog_msg_004),
             pLeftBtnText = "초기화",
             pLeftBtnClickListener = {
-                // TODO: 데이터 초기화 코드 추가해야 함
-                showToastMsg("서비스 개봉박두")
+                model.requestReset()
             },
             pRightBtnText = "취소",
             pRightBtnClickListener = {

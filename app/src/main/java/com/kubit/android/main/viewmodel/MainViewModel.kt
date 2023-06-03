@@ -8,8 +8,10 @@ import com.kubit.android.base.BaseViewModel
 import com.kubit.android.common.session.KubitSession
 import com.kubit.android.common.util.ConvertUtil
 import com.kubit.android.common.util.DLog
+import com.kubit.android.intro.viewmodel.IntroViewModel
 import com.kubit.android.model.data.coin.CoinSnapshotData
 import com.kubit.android.model.data.coin.KubitCoinInfoData
+import com.kubit.android.model.data.exchange.ExchangeRecordData
 import com.kubit.android.model.data.investment.InvestmentAssetData
 import com.kubit.android.model.data.investment.InvestmentData
 import com.kubit.android.model.data.investment.InvestmentNotYetData
@@ -22,9 +24,9 @@ import com.kubit.android.model.data.market.KubitMarketData
 import com.kubit.android.model.data.network.KubitNetworkResult
 import com.kubit.android.model.data.network.NetworkResult
 import com.kubit.android.model.data.route.KubitTabRouter
+import com.kubit.android.model.data.wallet.WalletOverall
 import com.kubit.android.model.repository.KubitRepository
 import com.kubit.android.model.repository.UpbitRepository
-import com.kubit.android.transaction.viewmodel.TransactionViewModel
 import kotlinx.coroutines.launch
 
 class MainViewModel(
@@ -83,6 +85,17 @@ class MainViewModel(
     private val selectedNotYetData: ArrayList<NotYetData> = arrayListOf()
     val enableRemvoeNotYetData: Boolean get() = selectedNotYetData.isNotEmpty()
     // endregion 투자내역 화면 관련 변수
+
+    // region 입출금 화면 관련 변수
+    private val _exchangeRecordData: MutableLiveData<List<ExchangeRecordData>> =
+        MutableLiveData(listOf())
+    val exchangeRecordData: LiveData<List<ExchangeRecordData>> get() = _exchangeRecordData
+    // endregion 입출금 화면 관련 변수
+
+    // region 프로필 화면 관련 변수
+    private val _resetResult: MutableLiveData<WalletOverall?> = MutableLiveData(null)
+    val resetResult: LiveData<WalletOverall?> get() = _resetResult
+    // endregion 프로필 화면 관련 변수
 
     fun initMarketData(pMarketData: KubitMarketData) {
         marketData = pMarketData
@@ -423,16 +436,221 @@ class MainViewModel(
         _investmentNotYetData.value = null
     }
 
+    /**
+     * 입출금 내역 데이터를 요청하는 함수
+     */
+    fun requestExchangeRecordData() {
+        viewModelScope.launch {
+            val result = kubitRepository.makeBankRequest(
+                pGrantType = KubitSession.grantType,
+                pAccessToken = KubitSession.accessToken
+            )
+            when (result) {
+                is KubitNetworkResult.Success<List<ExchangeRecordData>> -> {
+                    DLog.d(TAG, "exchangeRecordList=${result.data}")
+                    val exchangeRecordList = result.data
+                    _exchangeRecordData.postValue(exchangeRecordList)
+                }
+
+                is KubitNetworkResult.Refresh -> {
+                    requestRefreshToken { newGrantType, newAccessToken ->
+                        requestRemoveNotYetData()
+                    }
+                }
+
+                is KubitNetworkResult.Fail -> {
+                    DLog.e(TAG, result.failMsg)
+                    setApiFailMsg(result.failMsg)
+                }
+
+                is KubitNetworkResult.Error -> {
+                    DLog.e(TAG, result.exception.message, result.exception)
+                    setExceptionData(result.exception)
+                }
+            }
+        }
+    }
+
+    /**
+     * 서버에 입금을 요청하는 함수
+     *
+     * @param pDepositPrice     입금 금액
+     */
+    fun requestDeposit(pDepositPrice: Double): Boolean {
+        return if (pDepositPrice > 10000) {
+            setProgressFlag(true)
+            viewModelScope.launch {
+                val realDepositPrice = pDepositPrice.div(10).toInt().times(10).toDouble()
+                val result = kubitRepository.makeDepositRequest(
+                    pDepositPrice = realDepositPrice,
+                    pGrantType = KubitSession.grantType,
+                    pAccessToken = KubitSession.accessToken
+                )
+                when (result) {
+                    is KubitNetworkResult.Success<ExchangeRecordData> -> {
+                        val exchangeRecordList = exchangeRecordData.value
+                        if (exchangeRecordList != null) {
+                            val newList = arrayListOf(result.data)
+                            newList.addAll(exchangeRecordList)
+                            _exchangeRecordData.postValue(newList)
+                        } else {
+                            _exchangeRecordData.postValue(listOf(result.data))
+                        }
+                    }
+
+                    is KubitNetworkResult.Refresh -> {
+                        requestRefreshToken { newGrantType, newAccessToken ->
+                            requestDeposit(pDepositPrice)
+                        }
+                    }
+
+                    is KubitNetworkResult.Fail -> {
+                        DLog.e(TAG, result.failMsg)
+                        setApiFailMsg(result.failMsg)
+                    }
+
+                    is KubitNetworkResult.Error -> {
+                        DLog.e(TAG, result.exception.message, result.exception)
+                        setExceptionData(result.exception)
+                    }
+                }
+            }
+            true
+        } else {
+            false
+        }
+    }
+
+    /**
+     * 서버에 출금을 요청하는 함수
+     *
+     * @param pWithdrawalPrice  출금 금액
+     */
+    fun requestWithdrawal(pWithdrawalPrice: Double): Boolean {
+        val krw = KubitSession.KRW
+        return if (pWithdrawalPrice in 10000.0..krw) {
+            setProgressFlag(true)
+            viewModelScope.launch {
+                val realWithdrawalPrice = pWithdrawalPrice.div(10).toInt().times(10).toDouble()
+                val result = kubitRepository.makeWithdrawalRequest(
+                    pWithdrawalPrice = realWithdrawalPrice,
+                    pGrantType = KubitSession.grantType,
+                    pAccessToken = KubitSession.accessToken
+                )
+                when (result) {
+                    is KubitNetworkResult.Success<ExchangeRecordData> -> {
+                        val exchangeRecordList = exchangeRecordData.value
+                        if (exchangeRecordList != null) {
+                            val newList = arrayListOf(result.data)
+                            newList.addAll(exchangeRecordList)
+                            _exchangeRecordData.postValue(newList)
+                        } else {
+                            _exchangeRecordData.postValue(listOf(result.data))
+                        }
+                    }
+
+                    is KubitNetworkResult.Refresh -> {
+                        requestRefreshToken { newGrantType, newAccessToken ->
+                            requestWithdrawal(pWithdrawalPrice)
+                        }
+                    }
+
+                    is KubitNetworkResult.Fail -> {
+                        DLog.e(TAG, result.failMsg)
+                        setApiFailMsg(result.failMsg)
+                    }
+
+                    is KubitNetworkResult.Error -> {
+                        DLog.e(TAG, result.exception.message, result.exception)
+                        setExceptionData(result.exception)
+                    }
+                }
+            }
+            true
+        } else {
+            false
+        }
+    }
+
     fun requestReset() {
         DLog.d(TAG, "requestReset() is called!")
         viewModelScope.launch {
+            val result = kubitRepository.makeResetRequest(
+                pGrantType = KubitSession.grantType,
+                pAccessToken = KubitSession.accessToken
+            )
+            when (result) {
+                is KubitNetworkResult.Success<WalletOverall> -> {
+                    DLog.d("${TAG}_requestReset", "walletOverall=${result.data}")
+                    val walletOverall = result.data
+                    KubitSession.setWalletOverall(
+                        pKRW = walletOverall.KRW,
+                        pWalletList = walletOverall.walletList
+                    )
+                    _investmentAssetData.value = null
+                    _investmentRecordData.value = null
+                    _investmentNotYetData.value = null
+                    _exchangeRecordData.value = listOf()
+                }
 
+                is KubitNetworkResult.Refresh -> {
+                    requestRefreshToken { newGrantType, newAccessToken ->
+                        requestReset()
+                    }
+                }
+
+                is KubitNetworkResult.Fail -> {
+                    DLog.e(TAG, result.failMsg)
+                    setApiFailMsg(result.failMsg)
+                }
+
+                is KubitNetworkResult.Error -> {
+                    DLog.e(TAG, result.exception.message, result.exception)
+                    setExceptionData(result.exception)
+                }
+            }
+        }
+    }
+
+
+    fun requestWalletOverall() {
+        viewModelScope.launch {
+            val grantType = KubitSession.grantType
+            val accessToken = KubitSession.accessToken
+            when (val result = kubitRepository.makeWalletOverallRequest(grantType, accessToken)) {
+                is KubitNetworkResult.Success<WalletOverall> -> {
+                    val data = result.data
+                    DLog.d(TAG, "walletOverall=$data")
+                    KubitSession.setWalletOverall(data.KRW, data.walletList)
+                    setProgressFlag(false)
+                }
+
+                is KubitNetworkResult.Refresh -> {
+                    requestRefreshToken { newGrantType, newAccessToken ->
+                        requestWalletOverall()
+                    }
+                }
+
+                is KubitNetworkResult.Fail -> {
+                    DLog.e(TAG, "failMsg=${result.failMsg}")
+                    setApiFailMsg(result.failMsg)
+                }
+
+                is KubitNetworkResult.Error -> {
+                    DLog.e(TAG, result.exception.message, result.exception)
+                    setExceptionData(result.exception)
+                }
+            }
         }
     }
 
     fun requestLogout() {
         DLog.d(TAG, "requestLogout() is called!")
         KubitSession.logout()
+        _investmentAssetData.value = null
+        _investmentRecordData.value = null
+        _investmentNotYetData.value = null
+        _exchangeRecordData.value = listOf()
     }
 
     companion object {

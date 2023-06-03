@@ -213,6 +213,7 @@ open class BaseNetworkRepository(
         const val POST: String = "POST"
         const val GET: String = "GET"
         const val PUT: String = "PUT"
+        const val DELETE: String = "DELETE"
 
         private val TIME_OUT = 10 * 1000
 

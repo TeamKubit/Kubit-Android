@@ -17,6 +17,9 @@
     <string name="toast_msg_bid_order_success">매수 주문이 완료되었습니다.</string>
     <string name="toast_msg_ask_order_success">매도 주문이 완료되었습니다.</string>
     <string name="toast_msg_selected_not_yet_empty">취소하실 거래를 선택해 주세요.</string>
+    <string name="toast_msg_deposit_price_condition">입금 금액은 최소 10,000원 이상이어야 합니다.</string>
+    <string name="toast_msg_withdrawal_condition">출금 금액은 최소 10,000원 이어야 하며, 보유하고 있는 원화보다 많이 출금할 수 없습니다.</string>
+    <string name="toast_msg_successful_reset">초기화 되었습니다.</string>
 
     <string name="bottom_nav_coinList">거래소</string>
     <string name="bottom_nav_investment">투자내역</string>
@@ -132,6 +135,10 @@
     <string name="enterPrice_unitPrice">주문가격</string>
     <string name="enterPrice_quantity">주문수량</string>
     <string name="enterPrice_totalPrice">주문총액</string>
+
+    <string name="enterExchangePrice_depositTitle">입금액 입력</string>
+    <string name="enterExchangePrice_withdrawalTitle">출금액 입력</string>
+    <string name="enterExchangePrice_totalPrice">총액</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
