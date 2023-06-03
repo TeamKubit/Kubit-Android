@@ -162,10 +162,24 @@ class OrderBookFragment : BaseFragment() {
                 ConvertUtil.price2krwString(totalPrice, pWithKRW = true)
         })
 
-        model.transactionResult.observe(viewLifecycleOwner, Observer { result ->
+        model.bidTransactionResult.observe(viewLifecycleOwner, Observer { result ->
             if (result != null) {
                 model.setProgressFlag(false)
-                showToastMsg(getString(R.string.toast_msg_order_success))
+
+                binding.tvOrderBookBidCanOrder.text =
+                    ConvertUtil.price2krwString(result.KRW, pWithKRW = true)
+                showToastMsg(getString(R.string.toast_msg_bid_order_success))
+            }
+        })
+
+        model.askTransactionResult.observe(viewLifecycleOwner, Observer { result ->
+            if (result != null) {
+                model.setProgressFlag(false)
+
+                val wallet = model.selectedWallet
+                binding.tvOrderBookAskCanOrder.text =
+                    ConvertUtil.coinQuantity2string(wallet.quantity, wallet.market)
+                showToastMsg(getString(R.string.toast_msg_ask_order_success))
             }
         })
     }

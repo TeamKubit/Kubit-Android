@@ -214,11 +214,12 @@ class MainActivity : BaseActivity() {
 
             when (result.resultCode) {
                 RESULT_OK -> {
-
+                    DLog.d("${TAG}_transactionIntentForResult", "Successful Transaction!")
+                    model.requestClearInvestmentData()
                 }
 
                 else -> {
-
+                    DLog.d("${TAG}_transactionIntentForResult", "No Transaction!")
                 }
             }
         }

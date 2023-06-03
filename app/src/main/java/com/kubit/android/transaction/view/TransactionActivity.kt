@@ -1,5 +1,6 @@
 package com.kubit.android.transaction.view
 
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -47,6 +48,7 @@ class TransactionActivity : BaseActivity() {
         ContextCompat.getColor(this, R.color.gray)
     }
 
+    // region Activity LifeCycle
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
@@ -94,6 +96,7 @@ class TransactionActivity : BaseActivity() {
         OrderBookFragment.clearInstance()
         ChartFragment.clearInstance()
     }
+    // endregion Activity LifeCycle
 
     private fun setObserver() {
         model.progressFlag.observe(this, Observer { progressFlag ->
@@ -211,6 +214,16 @@ class TransactionActivity : BaseActivity() {
                 model.setTabRouter(TransactionTabRouter.CHART)
             }
         }
+    }
+
+    override fun finish() {
+        val bidResult = model.bidTransactionResult.value
+        val askResult = model.askTransactionResult.value
+        if (bidResult != null || askResult != null) {
+            setResult(RESULT_OK)
+        }
+
+        super.finish()
     }
 
     companion object {

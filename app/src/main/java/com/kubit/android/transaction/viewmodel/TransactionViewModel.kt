@@ -119,10 +119,16 @@ class TransactionViewModel(
     val askTransactionMethod: LiveData<TransactionMethod> get() = _askTransactionMethod
 
     /**
-     * 거래 요청 이후의 KRW 및 Wallet 데이터
+     * 매수 거래 요청 이후의 KRW 및 Wallet 데이터
      */
-    private val _transactionResult: MutableLiveData<WalletOverall?> = MutableLiveData(null)
-    val transactionResult: LiveData<WalletOverall?> get() = _transactionResult
+    private val _bidTransactionResult: MutableLiveData<WalletOverall?> = MutableLiveData(null)
+    val bidTransactionResult: LiveData<WalletOverall?> get() = _bidTransactionResult
+
+    /**
+     * 매도 거래 요청 이후의 KRW 및 Wallet 데이터
+     */
+    private val _askTransactionResult: MutableLiveData<WalletOverall?> = MutableLiveData(null)
+    val askTransactionResult: LiveData<WalletOverall?> get() = _askTransactionResult
     // endregion 호가창 화면 관련 변수
 
     // region 차트 화면 관련 변수
@@ -490,8 +496,20 @@ class TransactionViewModel(
                     when (result) {
                         is KubitNetworkResult.Success<WalletOverall> -> {
                             DLog.d("${TAG}_requestDesignatedBid", result.data.toString())
-                            KubitSession
-                            _transactionResult.postValue(result.data)
+                            val walletOverall = result.data
+                            KubitSession.setWalletOverall(
+                                walletOverall.KRW,
+                                walletOverall.walletList
+                            )
+                            for (idx in walletOverall.walletList.indices) {
+                                val wallet = walletOverall.walletList[idx]
+
+                                if (wallet.market == selectedWallet.market) {
+                                    _selectedWallet = wallet
+                                    break
+                                }
+                            }
+                            _bidTransactionResult.postValue(walletOverall)
                         }
 
                         is KubitNetworkResult.Refresh -> {
@@ -511,7 +529,6 @@ class TransactionViewModel(
                         }
                     }
                 }
-
                 true
             } else {
                 false
@@ -547,8 +564,20 @@ class TransactionViewModel(
                     when (result) {
                         is KubitNetworkResult.Success<WalletOverall> -> {
                             DLog.d("${TAG}_requestDesignatedAsk", result.data.toString())
-                            KubitSession
-                            _transactionResult.postValue(result.data)
+                            val walletOverall = result.data
+                            KubitSession.setWalletOverall(
+                                walletOverall.KRW,
+                                walletOverall.walletList
+                            )
+                            for (idx in walletOverall.walletList.indices) {
+                                val wallet = walletOverall.walletList[idx]
+
+                                if (wallet.market == selectedWallet.market) {
+                                    _selectedWallet = wallet
+                                    break
+                                }
+                            }
+                            _askTransactionResult.postValue(walletOverall)
                         }
 
                         is KubitNetworkResult.Refresh -> {
@@ -568,7 +597,6 @@ class TransactionViewModel(
                         }
                     }
                 }
-
                 true
             } else {
                 false
@@ -605,7 +633,20 @@ class TransactionViewModel(
                     when (result) {
                         is KubitNetworkResult.Success<WalletOverall> -> {
                             DLog.d("${TAG}_requestMarketBid", result.data.toString())
-                            _transactionResult.postValue(result.data)
+                            val walletOverall = result.data
+                            KubitSession.setWalletOverall(
+                                walletOverall.KRW,
+                                walletOverall.walletList
+                            )
+                            for (idx in walletOverall.walletList.indices) {
+                                val wallet = walletOverall.walletList[idx]
+
+                                if (wallet.market == selectedWallet.market) {
+                                    _selectedWallet = wallet
+                                    break
+                                }
+                            }
+                            _bidTransactionResult.postValue(walletOverall)
                         }
 
                         is KubitNetworkResult.Refresh -> {
@@ -625,7 +666,6 @@ class TransactionViewModel(
                         }
                     }
                 }
-
                 true
             } else {
                 false
@@ -659,7 +699,20 @@ class TransactionViewModel(
                     when (result) {
                         is KubitNetworkResult.Success<WalletOverall> -> {
                             DLog.d("${TAG}_requestMarketBid", result.data.toString())
-                            _transactionResult.postValue(result.data)
+                            val walletOverall = result.data
+                            KubitSession.setWalletOverall(
+                                walletOverall.KRW,
+                                walletOverall.walletList
+                            )
+                            for (idx in walletOverall.walletList.indices) {
+                                val wallet = walletOverall.walletList[idx]
+
+                                if (wallet.market == selectedWallet.market) {
+                                    _selectedWallet = wallet
+                                    break
+                                }
+                            }
+                            _askTransactionResult.postValue(walletOverall)
                         }
 
                         is KubitNetworkResult.Refresh -> {
@@ -679,7 +732,6 @@ class TransactionViewModel(
                         }
                     }
                 }
-
                 true
             } else {
                 false
