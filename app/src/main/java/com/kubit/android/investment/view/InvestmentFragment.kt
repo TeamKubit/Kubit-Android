@@ -13,6 +13,7 @@ import com.google.android.material.tabs.TabLayout
 import com.kubit.android.R
 import com.kubit.android.base.BaseFragment
 import com.kubit.android.common.deco.BorderItemDecoration
+import com.kubit.android.common.dialog.MessageDialog
 import com.kubit.android.common.util.ConvertUtil
 import com.kubit.android.common.util.DLog
 import com.kubit.android.databinding.FragmentInvestmentBinding
@@ -20,6 +21,8 @@ import com.kubit.android.investment.adapter.InvestmentAdapter
 import com.kubit.android.main.viewmodel.MainViewModel
 import com.kubit.android.model.data.investment.InvestmentAssetData
 import com.kubit.android.model.data.investment.InvestmentData
+import com.kubit.android.model.data.investment.InvestmentNotYetData
+import com.kubit.android.model.data.investment.InvestmentRecordData
 
 class InvestmentFragment : BaseFragment() {
 
@@ -28,6 +31,8 @@ class InvestmentFragment : BaseFragment() {
     private val binding: FragmentInvestmentBinding get() = _binding!!
 
     private lateinit var assetAdapter: InvestmentAdapter
+    private lateinit var recordAdapter: InvestmentAdapter
+    private lateinit var notYetAdapter: InvestmentAdapter
 
     // region Fragment LifeCycle
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -71,6 +76,22 @@ class InvestmentFragment : BaseFragment() {
                 assetAdapter.update(assetData)
             }
         })
+
+        model.investmentRecordData.observe(viewLifecycleOwner, Observer { recordData ->
+            if (recordData != null) {
+                DLog.d(TAG, "recordData=$recordData")
+                model.setProgressFlag(false)
+                recordAdapter.update(recordData)
+            }
+        })
+
+        model.investmentNotYetData.observe(viewLifecycleOwner, Observer { notYetData ->
+            if (notYetData != null) {
+                DLog.d(TAG, "notYetData=$notYetData")
+                model.setProgressFlag(false)
+                notYetAdapter.update(notYetData)
+            }
+        })
     }
 
     private fun init() {
@@ -86,6 +107,21 @@ class InvestmentFragment : BaseFragment() {
                 portfolioList = listOf(PieEntry(1f, "KRW"))
             )
         ) { notYetData, pos -> }
+        recordAdapter = InvestmentAdapter(
+            InvestmentRecordData(listOf())
+        ) { notYetData, pos -> }
+        notYetAdapter = InvestmentAdapter(
+            InvestmentNotYetData(listOf())
+        ) { notYetData, pos ->
+            if (notYetData.isSelected) {
+                notYetData.isSelected = false
+                model.removeNotYetData(notYetData)
+            } else {
+                notYetData.isSelected = true
+                model.addNotYetData(notYetData)
+            }
+            notYetAdapter.notifyItemChanged(pos)
+        }
 
         binding.apply {
             tlInvestment.apply {
@@ -109,21 +145,29 @@ class InvestmentFragment : BaseFragment() {
                                 rvInvestmentAsset.visibility = View.VISIBLE
                                 rvInvestmentRecord.visibility = View.GONE
                                 rvInvestmentNotYet.visibility = View.GONE
-                                tvInvestmentDeleteSelectOrder.visibility = View.GONE
+                                tvInvestmentRemoveSelectOrder.visibility = View.GONE
                             }
 
                             R.id.investment_tab_record -> {
                                 rvInvestmentAsset.visibility = View.GONE
                                 rvInvestmentRecord.visibility = View.VISIBLE
                                 rvInvestmentNotYet.visibility = View.GONE
-                                tvInvestmentDeleteSelectOrder.visibility = View.GONE
+                                tvInvestmentRemoveSelectOrder.visibility = View.GONE
+
+                                if (model.investmentRecordData.value == null) {
+                                    model.requestInvestmentRecordData()
+                                }
                             }
 
                             R.id.investment_tab_not_yet -> {
                                 rvInvestmentAsset.visibility = View.GONE
                                 rvInvestmentRecord.visibility = View.GONE
                                 rvInvestmentNotYet.visibility = View.VISIBLE
-                                tvInvestmentDeleteSelectOrder.visibility = View.VISIBLE
+                                tvInvestmentRemoveSelectOrder.visibility = View.VISIBLE
+
+                                if (model.investmentNotYetData.value == null) {
+                                    model.requestInvestmentNotYetData()
+                                }
                             }
                         }
                     }
@@ -144,12 +188,65 @@ class InvestmentFragment : BaseFragment() {
                 addItemDecoration(
                     BorderItemDecoration(
                         borderPos = listOf(BorderItemDecoration.BorderPos.BOTTOM),
-                        borderWidth = ConvertUtil.dp2px(requireContext(), 1),
+                        borderWidth = ConvertUtil.dp2px(requireContext(), 2),
                         borderColor = ContextCompat.getColor(requireContext(), R.color.border)
                     )
                 )
             }
+            rvInvestmentRecord.apply {
+                layoutManager =
+                    LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+                adapter = recordAdapter
+                itemAnimator = null
+                addItemDecoration(
+                    BorderItemDecoration(
+                        borderPos = listOf(BorderItemDecoration.BorderPos.BOTTOM),
+                        borderWidth = ConvertUtil.dp2px(requireContext(), 2),
+                        borderColor = ContextCompat.getColor(requireContext(), R.color.border)
+                    )
+                )
+            }
+            rvInvestmentNotYet.apply {
+                layoutManager =
+                    LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+                adapter = notYetAdapter
+                itemAnimator = null
+                addItemDecoration(
+                    BorderItemDecoration(
+                        borderPos = listOf(BorderItemDecoration.BorderPos.BOTTOM),
+                        borderWidth = ConvertUtil.dp2px(requireContext(), 2),
+                        borderColor = ContextCompat.getColor(requireContext(), R.color.border)
+                    )
+                )
+            }
+
+            tvInvestmentRemoveSelectOrder.setOnClickListener {
+                if (model.enableRemvoeNotYetData) {
+                    showRemoveNotYetDialog()
+                } else {
+                    showToastMsg(getString(R.string.toast_msg_selected_not_yet_empty))
+                }
+            }
         }
+    }
+
+    private fun showRemoveNotYetDialog() {
+        for (fragment in childFragmentManager.fragments) {
+            if (fragment is MessageDialog) {
+                return
+            }
+        }
+
+        MessageDialog(
+            pMsg = getString(R.string.dialog_msg_005),
+            pLeftBtnText = "거래취소",
+            pLeftBtnClickListener = {
+                model.requestRemoveNotYetData()
+            },
+            pRightBtnText = "닫기",
+            pRightBtnClickListener = {
+            }
+        ).show(childFragmentManager, MessageDialog.TAG)
     }
 
     companion object {

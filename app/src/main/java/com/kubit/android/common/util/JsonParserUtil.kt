@@ -9,6 +9,10 @@ import com.kubit.android.model.data.chart.ChartDataWrapper
 import com.kubit.android.model.data.coin.CoinSnapshotData
 import com.kubit.android.model.data.coin.KubitCoinInfoData
 import com.kubit.android.model.data.coin.PriceChangeType
+import com.kubit.android.model.data.investment.InvestmentNotYetData
+import com.kubit.android.model.data.investment.InvestmentRecordData
+import com.kubit.android.model.data.investment.NotYetData
+import com.kubit.android.model.data.investment.RecordData
 import com.kubit.android.model.data.login.LoginSessionData
 import com.kubit.android.model.data.market.KubitMarketData
 import com.kubit.android.model.data.network.KubitNetworkResult
@@ -508,6 +512,187 @@ class JsonParserUtil {
         }
     }
 
+    fun getTransactionCompletesResponse(jsonRoot: JSONObject): KubitNetworkResult<InvestmentRecordData> {
+        val resultCode = getInt(jsonRoot, KEY_RESULT_CODE)
+        val resultMsg = getString(jsonRoot, KEY_RESULT_MSG)
+
+        // Token 유효기간 만료
+        if (resultCode == 403) {
+            return KubitNetworkResult.Refresh(KubitSession.refreshToken)
+        }
+        // 그 외의 오류
+        else if (resultCode != 200) {
+            return KubitNetworkResult.Fail(resultMsg)
+        }
+
+        val detailObj = getJsonObject(jsonRoot, KEY_DETAIL)
+        return if (detailObj != null) {
+            val transactionList = getJSONArray(detailObj, KEY_TRANSACTION_LIST)
+
+            val recordList: ArrayList<RecordData> = arrayListOf()
+            if (transactionList != null) {
+                for (idx in 0 until transactionList.length()) {
+                    if (!transactionList.isNull(idx)) {
+                        val obj = transactionList.getJSONObject(idx)
+
+                        if (obj != null) {
+                            val transactionID = getInt(obj, KEY_TRANSACTION_ID)
+                            val market = getString(obj, KEY_MARKET_CODE)
+                            val nameKor = getString(obj, KEY_KOREAN_NAME)
+                            val nameEng = getString(obj, KEY_ENGLISH_NAME)
+                            val quantity = getDouble(obj, KEY_QUANTITY)
+                            val transactionType = getString(obj, KEY_TRANSACTION_TYPE)
+                            val completeTime =
+                                getString(obj, KEY_COMPLETE_TIME).replace('T', ' ')
+                            val resultType = getString(obj, KEY_RESULT_TYPE)
+                            val fee = getDouble(obj, KEY_CHARGE)
+                            val requestPrice = getDouble(obj, KEY_REQUEST_PRICE)
+                            val completePrice = getDouble(obj, KEY_COMPLETE_PRICE)
+
+                            /**
+                             * 거래금액
+                             */
+                            val transactionPrice = quantity * completePrice
+
+                            if (resultType == "SUCCESS") {
+                                // 매도
+                                if (transactionType == "ASK") {
+                                    recordList.add(
+                                        RecordData(
+                                            transactionID = transactionID,
+                                            coinCode = market.split('-').getOrNull(1) ?: "",
+                                            nameKor = nameKor,
+                                            nameEng = nameEng,
+                                            transactionType = TransactionType.ASK,
+                                            time = completeTime,
+                                            transactionPrice = transactionPrice,
+                                            quantity = quantity,
+                                            transactionUnitPrice = completePrice,
+                                            fee = fee,
+                                            returnPrice = transactionPrice - fee
+                                        )
+                                    )
+                                }
+                                // 매수
+                                else if (transactionType == "BID") {
+                                    recordList.add(
+                                        RecordData(
+                                            transactionID = transactionID,
+                                            coinCode = market.split('-').getOrNull(1) ?: "",
+                                            nameKor = nameKor,
+                                            nameEng = nameEng,
+                                            transactionType = TransactionType.BID,
+                                            time = completeTime,
+                                            transactionPrice = transactionPrice,
+                                            quantity = quantity,
+                                            transactionUnitPrice = completePrice,
+                                            fee = fee,
+                                            returnPrice = transactionPrice + fee
+                                        )
+                                    )
+                                }
+                                // error
+                                else {
+                                    DLog.e(TAG, "Unrecognized TransactionType! $obj")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            KubitNetworkResult.Success(InvestmentRecordData(recordList))
+        } else {
+            KubitNetworkResult.Fail(resultMsg)
+        }
+    }
+
+    fun getTransactionWaitResponse(jsonRoot: JSONObject): KubitNetworkResult<InvestmentNotYetData> {
+        val resultCode = getInt(jsonRoot, KEY_RESULT_CODE)
+        val resultMsg = getString(jsonRoot, KEY_RESULT_MSG)
+
+        // Token 유효기간 만료
+        if (resultCode == 403) {
+            return KubitNetworkResult.Refresh(KubitSession.refreshToken)
+        }
+        // 그 외의 오류
+        else if (resultCode != 200) {
+            return KubitNetworkResult.Fail(resultMsg)
+        }
+
+        val detailObj = getJsonObject(jsonRoot, KEY_DETAIL)
+        return if (detailObj != null) {
+            val transactionList = getJSONArray(detailObj, KEY_TRANSACTION_LIST)
+
+            val notYetList: ArrayList<NotYetData> = arrayListOf()
+            if (transactionList != null) {
+                for (idx in 0 until transactionList.length()) {
+                    if (!transactionList.isNull(idx)) {
+                        val obj = transactionList.getJSONObject(idx)
+
+                        if (obj != null) {
+                            val transactionID = getInt(obj, KEY_TRANSACTION_ID)
+                            val market = getString(obj, KEY_MARKET_CODE)
+                            val nameKor = getString(obj, KEY_KOREAN_NAME)
+                            val nameEng = getString(obj, KEY_ENGLISH_NAME)
+                            val quantity = getDouble(obj, KEY_QUANTITY)
+                            val transactionType = getString(obj, KEY_TRANSACTION_TYPE)
+                            val completeTime =
+                                getString(obj, KEY_COMPLETE_TIME).replace('T', ' ')
+                            val resultType = getString(obj, KEY_RESULT_TYPE)
+                            val fee = getDouble(obj, KEY_CHARGE)
+                            val requestPrice = getDouble(obj, KEY_REQUEST_PRICE)
+                            val completePrice = getDouble(obj, KEY_COMPLETE_PRICE)
+
+                            if (resultType == "WAIT") {
+                                // 매도
+                                if (transactionType == "ASK") {
+                                    notYetList.add(
+                                        NotYetData(
+                                            transactionID = transactionID,
+                                            coinCode = market.split('-').getOrNull(1) ?: "",
+                                            nameKor = nameKor,
+                                            nameEng = nameEng,
+                                            transactionType = TransactionType.ASK,
+                                            time = "",
+                                            quantity = quantity,
+                                            price = requestPrice,
+                                            notYetQuantity = quantity
+                                        )
+                                    )
+                                }
+                                // 매수
+                                else if (transactionType == "BID") {
+                                    notYetList.add(
+                                        NotYetData(
+                                            transactionID = transactionID,
+                                            coinCode = market.split('-').getOrNull(1) ?: "",
+                                            nameKor = nameKor,
+                                            nameEng = nameEng,
+                                            transactionType = TransactionType.BID,
+                                            time = "",
+                                            quantity = quantity,
+                                            price = requestPrice,
+                                            notYetQuantity = quantity
+                                        )
+                                    )
+                                }
+                                // error
+                                else {
+                                    DLog.e(TAG, "Unrecognized TransactionType! $obj")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            KubitNetworkResult.Success(InvestmentNotYetData(notYetList))
+        } else {
+            KubitNetworkResult.Fail(resultMsg)
+        }
+    }
+
     fun getTransactionResponse(jsonRoot: JSONObject): KubitNetworkResult<WalletOverall> {
         val resultCode = getInt(jsonRoot, KEY_RESULT_CODE)
         val resultMsg = getString(jsonRoot, KEY_RESULT_MSG)
@@ -625,6 +810,15 @@ class JsonParserUtil {
         private const val KEY_QUANTITY_AVAILABLE: String = "quantityAvailable"
         private const val KEY_QUANTITY: String = "quantity"
         private const val KEY_TOTAL_PRICE: String = "totalPrice"
+
+        private const val KEY_TRANSACTION_LIST: String = "transactionList"
+        private const val KEY_TRANSACTION_ID: String = "transactionId"
+        private const val KEY_TRANSACTION_TYPE: String = "transactionType"
+        private const val KEY_COMPLETE_TIME: String = "completeTime"
+        private const val KEY_RESULT_TYPE: String = "resultType"
+        private const val KEY_CHARGE: String = "charge"
+        private const val KEY_REQUEST_PRICE: String = "requestPrice"
+        private const val KEY_COMPLETE_PRICE: String = "completePrice"
     }
 
 }

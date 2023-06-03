@@ -15,14 +15,21 @@ import com.kubit.android.model.data.investment.InvestmentData
 import com.kubit.android.model.data.investment.InvestmentNotYetData
 import com.kubit.android.model.data.investment.InvestmentRecordData
 import com.kubit.android.model.data.investment.InvestmentWalletData
+import com.kubit.android.model.data.investment.NotYetData
+import com.kubit.android.model.data.login.LoginSessionData
 import com.kubit.android.model.data.market.KubitMarketCode
 import com.kubit.android.model.data.market.KubitMarketData
+import com.kubit.android.model.data.network.KubitNetworkResult
+import com.kubit.android.model.data.network.NetworkResult
 import com.kubit.android.model.data.route.KubitTabRouter
+import com.kubit.android.model.repository.KubitRepository
 import com.kubit.android.model.repository.UpbitRepository
+import com.kubit.android.transaction.viewmodel.TransactionViewModel
 import kotlinx.coroutines.launch
 
 class MainViewModel(
-    private val upbitRepository: UpbitRepository
+    private val upbitRepository: UpbitRepository,
+    private val kubitRepository: KubitRepository
 ) : BaseViewModel() {
 
     /**
@@ -50,15 +57,32 @@ class MainViewModel(
     /**
      * 검색어에 의해 필터링된 코인 스냅샷 데이터 리스트
      */
-    private val _filterdCoinSnapshotDataList: MutableLiveData<List<CoinSnapshotData>> =
+    private val _filteredCoinSnapshotDataList: MutableLiveData<List<CoinSnapshotData>> =
         MutableLiveData(listOf())
-    val filteredCoinSnapshotDataList: LiveData<List<CoinSnapshotData>> get() = _filterdCoinSnapshotDataList
+    val filteredCoinSnapshotDataList: LiveData<List<CoinSnapshotData>> get() = _filteredCoinSnapshotDataList
 
+    // region 투자내역 화면 관련 변수
     /**
      * 보유자산 화면에 보여줄 데이터
      */
     private val _investmentAssetData: MutableLiveData<InvestmentData?> = MutableLiveData(null)
     val investmentAssetData: LiveData<InvestmentData?> get() = _investmentAssetData
+
+    /**
+     * 거래내역 화면에 보여줄 데이터
+     */
+    private val _investmentRecordData: MutableLiveData<InvestmentData?> = MutableLiveData(null)
+    val investmentRecordData: LiveData<InvestmentData?> get() = _investmentRecordData
+
+    /**
+     * 미체결 내역 화면에 보여줄 데이터
+     */
+    private val _investmentNotYetData: MutableLiveData<InvestmentData?> = MutableLiveData(null)
+    val investmentNotYetData: LiveData<InvestmentData?> get() = _investmentNotYetData
+
+    private val selectedNotYetData: ArrayList<NotYetData> = arrayListOf()
+    val enableRemvoeNotYetData: Boolean get() = selectedNotYetData.isNotEmpty()
+    // endregion 투자내역 화면 관련 변수
 
     fun initMarketData(pMarketData: KubitMarketData) {
         marketData = pMarketData
@@ -91,7 +115,7 @@ class MainViewModel(
                 filteredList.add(snapshot)
             }
         }
-        _filterdCoinSnapshotDataList.postValue(filteredList)
+        _filteredCoinSnapshotDataList.postValue(filteredList)
     }
 
     fun requestTickerData(
@@ -125,6 +149,9 @@ class MainViewModel(
         }
     }
 
+    /**
+     * 보유자산 데이터를 요청하는 함수
+     */
     fun requestInvestmentTickerData() {
         DLog.d(TAG, "requestInvestmentTickerData() is called!")
         viewModelScope.launch {
@@ -251,20 +278,149 @@ class MainViewModel(
         }
     }
 
+
+    private fun requestRefreshToken(
+        onSuccessListener: (newGrantType: String, newAccessToken: String) -> Unit
+    ) {
+        viewModelScope.launch {
+            when (val refreshTokenResult =
+                kubitRepository.makeRefreshTokenRequest(KubitSession.refreshToken)) {
+                is NetworkResult.Success<LoginSessionData> -> {
+                    val loginSession = refreshTokenResult.data
+                    DLog.d(TAG, "new LoginSession is $loginSession")
+                    KubitSession.updateLoginSession(
+                        pGrantType = loginSession.grantType,
+                        pAccessToken = loginSession.accessToken,
+                        pRefreshToken = loginSession.refreshToken
+                    )
+                    onSuccessListener(loginSession.grantType, loginSession.accessToken)
+                }
+
+                is NetworkResult.Fail -> {
+                    DLog.e(TAG, refreshTokenResult.failMsg)
+                }
+
+                is NetworkResult.Error -> {
+                    DLog.e(TAG, refreshTokenResult.exception.message, refreshTokenResult.exception)
+                }
+            }
+        }
+    }
+
+    /**
+     * 거래내역 데이터를 요청하는 함수
+     */
     fun requestInvestmentRecordData() {
         DLog.d(TAG, "requestInvestmentRecordData() is called!")
         setProgressFlag(true)
         viewModelScope.launch {
+            val result = kubitRepository.makeTransactionCompletesRequest(
+                pGrantType = KubitSession.grantType,
+                pAccessToken = KubitSession.accessToken
+            )
+            when (result) {
+                is KubitNetworkResult.Success<InvestmentRecordData> -> {
+                    DLog.d(TAG, "recordData=${result.data}")
+                    _investmentRecordData.postValue(result.data)
+                }
 
+                is KubitNetworkResult.Refresh -> {
+                    requestRefreshToken { newGrantType, newAccessToken ->
+                        requestInvestmentRecordData()
+                    }
+                }
+
+                is KubitNetworkResult.Fail -> {
+                    DLog.e(TAG, result.failMsg)
+                    setApiFailMsg(result.failMsg)
+                }
+
+                is KubitNetworkResult.Error -> {
+                    DLog.e(TAG, result.exception.message, result.exception)
+                    setExceptionData(result.exception)
+                }
+            }
         }
     }
 
+    /**
+     * 미체결 내역 데이터를 요청하는 함수
+     */
     fun requestInvestmentNotYetData() {
         DLog.d(TAG, "requestInvestmentNotYetData() is called!")
         setProgressFlag(true)
         viewModelScope.launch {
+            val result = kubitRepository.makeTransactionWaitRequest(
+                pGrantType = KubitSession.grantType,
+                pAccessToken = KubitSession.accessToken
+            )
+            when (result) {
+                is KubitNetworkResult.Success<InvestmentNotYetData> -> {
+                    DLog.d(TAG, "notYetData=${result.data}")
+                    _investmentNotYetData.postValue(result.data)
+                }
 
+                is KubitNetworkResult.Refresh -> {
+                    requestRefreshToken { newGrantType, newAccessToken ->
+                        requestInvestmentNotYetData()
+                    }
+                }
+
+                is KubitNetworkResult.Fail -> {
+                    DLog.e(TAG, result.failMsg)
+                    setApiFailMsg(result.failMsg)
+                }
+
+                is KubitNetworkResult.Error -> {
+                    DLog.e(TAG, result.exception.message, result.exception)
+                    setExceptionData(result.exception)
+                }
+            }
         }
+    }
+
+    /**
+     * 미체결된 거래를 취소 요청하는 함수
+     */
+    fun requestRemoveNotYetData(): Boolean {
+        return if (enableRemvoeNotYetData) {
+            DLog.d(TAG, "requestRemoveNotYetData() is called!")
+            setProgressFlag(true)
+            viewModelScope.launch {
+
+            }
+            true
+        } else {
+            false
+        }
+    }
+
+    fun addNotYetData(pNotYetData: NotYetData) {
+        val idx = selectedNotYetData.indexOfFirst {
+            it.transactionID == pNotYetData.transactionID
+        }
+        if (idx == -1) {
+            selectedNotYetData.add(pNotYetData)
+        }
+    }
+
+    fun removeNotYetData(pNotYetData: NotYetData) {
+        val idx = selectedNotYetData.indexOfFirst {
+            it.transactionID == pNotYetData.transactionID
+        }
+        if (idx != -1) {
+            selectedNotYetData.removeAt(idx)
+        }
+    }
+
+    /**
+     * 매수 또는 매도 거래 이후에 거래내역 및 미체결 내역을 조회하는 경우,
+     *
+     * 데이터 갱신이 필요하기 때문에 이를 초기화 해줘야 함
+     */
+    fun requestClearInvestmentData() {
+        _investmentRecordData.value = null
+        _investmentNotYetData.value = null
     }
 
     fun requestReset() {

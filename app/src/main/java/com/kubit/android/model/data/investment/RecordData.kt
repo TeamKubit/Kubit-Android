@@ -4,6 +4,10 @@ import com.kubit.android.model.data.transaction.TransactionType
 
 data class RecordData(
     /**
+     * 거래 고유 ID
+     */
+    val transactionID: Int,
+    /**
      * 코인 코드, ex) KRW-BTC -> BTC
      */
     val coinCode: String,

@@ -63,7 +63,8 @@ open class BaseViewModel : ViewModel() {
             // Main Activity ViewModel
             else if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
                 return MainViewModel(
-                    UpbitRepository(application)
+                    UpbitRepository(application),
+                    KubitRepository(application)
                 ) as T
             }
             // Transaction Activity ViewModel

@@ -4,6 +4,8 @@ import android.app.Application
 import com.kubit.android.R
 import com.kubit.android.base.BaseNetworkRepository
 import com.kubit.android.common.util.JsonParserUtil
+import com.kubit.android.model.data.investment.InvestmentNotYetData
+import com.kubit.android.model.data.investment.InvestmentRecordData
 import com.kubit.android.model.data.login.LoginSessionData
 import com.kubit.android.model.data.network.KubitNetworkResult
 import com.kubit.android.model.data.network.NetworkResult
@@ -89,6 +91,76 @@ class KubitRepository(
                 try {
                     val jsonRoot = JSONObject(message)
                     jsonParserUtil.getWalletOverallData(jsonRoot)
+                } catch (e: JSONException) {
+                    KubitNetworkResult.Error(e)
+                }
+            } else {
+                KubitNetworkResult.Fail(
+                    application.getString(
+                        R.string.api_connection_fail_msg
+                    )
+                )
+            }
+        }
+    }
+
+    /**
+     * 보유자산 > 거래내역 데이터를 요청하는 API를 호출하는 함수
+     *
+     * @param pGrantType    ?
+     * @param pAccessToken  엑세스 토큰
+     */
+    suspend fun makeTransactionCompletesRequest(
+        pGrantType: String,
+        pAccessToken: String
+    ): KubitNetworkResult<InvestmentRecordData> {
+        return withContext(Dispatchers.IO) {
+            val message = sendRequestToKubitServer(
+                KUBIT_API_TRANSACTION_COMPLETES_URL,
+                hashMapOf(),
+                GET,
+                "$pGrantType $pAccessToken"
+            )
+
+            if (message.isNotEmpty()) {
+                try {
+                    val jsonRoot = JSONObject(message)
+                    jsonParserUtil.getTransactionCompletesResponse(jsonRoot)
+                } catch (e: JSONException) {
+                    KubitNetworkResult.Error(e)
+                }
+            } else {
+                KubitNetworkResult.Fail(
+                    application.getString(
+                        R.string.api_connection_fail_msg
+                    )
+                )
+            }
+        }
+    }
+
+    /**
+     * 투자내역 > 미체결내역 데이터를 요청하는 API를 호출하는 함수
+     *
+     * @param pGrantType    ?
+     * @param pAccessToken  엑세스 토큰
+     */
+    suspend fun makeTransactionWaitRequest(
+        pGrantType: String,
+        pAccessToken: String
+    ): KubitNetworkResult<InvestmentNotYetData> {
+        return withContext(Dispatchers.IO) {
+            val message = sendRequestToKubitServer(
+                KUBIT_API_TRANSACTION_WAIT_URL,
+                hashMapOf(),
+                GET,
+                "$pGrantType $pAccessToken"
+            )
+
+            if (message.isNotEmpty()) {
+                try {
+                    val jsonRoot = JSONObject(message)
+                    jsonParserUtil.getTransactionWaitResponse(jsonRoot)
                 } catch (e: JSONException) {
                     KubitNetworkResult.Error(e)
                 }
@@ -262,6 +334,10 @@ class KubitRepository(
         private const val KUBIT_API_WALLET_OVERALL_URL: String =
             "${KUBIT_API_HOST_URL}user/wallet_overall"
 
+        private const val KUBIT_API_TRANSACTION_COMPLETES_URL: String =
+            "${KUBIT_API_HOST_URL}transaction/completes"
+        private const val KUBIT_API_TRANSACTION_WAIT_URL: String =
+            "${KUBIT_API_HOST_URL}transaction/requests"
         private const val KUBIT_API_TRANSACTION_FIXED_URL: String =
             "${KUBIT_API_HOST_URL}transaction/fixed"
         private const val KUBIT_API_TRANSACTION_MARKET_BID_URL: String =
