@@ -528,8 +528,9 @@ class MainViewModel(
 
                         val exchangeRecordList = exchangeRecordData.value
                         if (exchangeRecordList != null) {
-                            val newList = arrayListOf(result.data)
+                            val newList = arrayListOf<ExchangeRecordData>()
                             newList.addAll(exchangeRecordList)
+                            newList.add(result.data)
                             _exchangeRecordData.postValue(newList)
                         } else {
                             _exchangeRecordData.postValue(listOf(result.data))
@@ -581,8 +582,9 @@ class MainViewModel(
 
                         val exchangeRecordList = exchangeRecordData.value
                         if (exchangeRecordList != null) {
-                            val newList = arrayListOf(result.data)
+                            val newList = arrayListOf<ExchangeRecordData>()
                             newList.addAll(exchangeRecordList)
+                            newList.add(result.data)
                             _exchangeRecordData.postValue(newList)
                         } else {
                             _exchangeRecordData.postValue(listOf(result.data))
