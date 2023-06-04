@@ -1176,9 +1176,9 @@ class JsonParserUtil {
         private const val KEY_REQUEST_PRICE: String = "requestPrice"
         private const val KEY_COMPLETE_PRICE: String = "completePrice"
 
-        private const val KEY_BANK_LIST: String = "bank_list"
-        private const val KEY_BANK_TYPE: String = "bank_type"
-        private const val KEY_TRADE_AT: String = "trade_at"
+        private const val KEY_BANK_LIST: String = "bankList"
+        private const val KEY_BANK_TYPE: String = "bankType"
+        private const val KEY_TRADE_AT: String = "tradeAt"
         private const val KEY_BANK: String = "bank"
 
         private const val KEY_USER: String = "user"

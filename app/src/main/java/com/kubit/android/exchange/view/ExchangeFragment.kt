@@ -64,6 +64,12 @@ class ExchangeFragment : BaseFragment() {
         model.exchangeRecordData.observe(viewLifecycleOwner, Observer { exchangeRecordList ->
             model.setProgressFlag(false)
             exchangeAdapter.update(exchangeRecordList)
+
+            binding.apply {
+                val strKRW = ConvertUtil.price2krwString(KubitSession.KRW, pWithKRW = true)
+                tvExchangeTotalKRW.text = strKRW
+                tvExchangeCanWithdrawal.text = strKRW
+            }
         })
     }
 

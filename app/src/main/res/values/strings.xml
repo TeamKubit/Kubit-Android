@@ -19,6 +19,7 @@
     <string name="toast_msg_selected_not_yet_empty">취소하실 거래를 선택해 주세요.</string>
     <string name="toast_msg_deposit_price_condition">입금 금액은 최소 10,000원 이상이어야 합니다.</string>
     <string name="toast_msg_withdrawal_condition">출금 금액은 최소 10,000원 이어야 하며, 보유하고 있는 원화보다 많이 출금할 수 없습니다.</string>
+    <string name="toast_msg_deposit_withdrawal_success">입/출금이 완료되었습니다.</string>
     <string name="toast_msg_successful_reset">초기화 되었습니다.</string>
 
     <string name="bottom_nav_coinList">거래소</string>

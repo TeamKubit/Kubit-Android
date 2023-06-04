@@ -79,6 +79,7 @@ class ProfileFragment : BaseFragment() {
             if (resetResult != null) {
                 model.setProgressFlag(false)
                 showToastMsg(getString(R.string.toast_msg_successful_reset))
+                model.clearResetResult()
             }
         })
     }

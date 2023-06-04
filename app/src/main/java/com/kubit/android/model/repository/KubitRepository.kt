@@ -270,7 +270,7 @@ class KubitRepository(
             val message = sendRequestToKubitServer(
                 KUBIT_API_USER_BANK,
                 hsParams,
-                POST,
+                PUT,
                 "$pGrantType $pAccessToken"
             )
 
@@ -311,7 +311,7 @@ class KubitRepository(
             val message = sendRequestToKubitServer(
                 KUBIT_API_USER_BANK,
                 hsParams,
-                POST,
+                PUT,
                 "$pGrantType $pAccessToken"
             )
 
@@ -524,7 +524,7 @@ class KubitRepository(
         private const val KUBIT_API_TRANSACTION_MARKET_ASK_URL: String =
             "${KUBIT_API_HOST_URL}transaction/market/ask/"
 
-        private const val KUBIT_API_USER_BANK: String = "${KUBIT_API_HOST_URL}user/bank/"
+        private const val KUBIT_API_USER_BANK: String = "${KUBIT_API_HOST_URL}bank/"
         private const val KUBIT_API_USER_RESET: String = "${KUBIT_API_HOST_URL}user/reset/"
     }
 

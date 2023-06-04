@@ -118,6 +118,14 @@ object KubitSession {
         _walletList.addAll(pWalletList)
     }
 
+    fun depositKRW(pDepositPrice: Double) {
+        _KRW += pDepositPrice
+    }
+
+    fun withdrawalKRW(pWithdrawalPrice: Double) {
+        _KRW -= pWithdrawalPrice
+    }
+
     /**
      * 로그인 했는지 여부를 반환하는 함수
      */

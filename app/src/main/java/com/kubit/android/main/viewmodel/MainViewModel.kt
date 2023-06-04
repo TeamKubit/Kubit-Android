@@ -118,6 +118,10 @@ class MainViewModel(
         }
     }
 
+    fun clearResetResult() {
+        _resetResult.value = null
+    }
+
     private fun setFilteredCoinSnapshotDataList(
         pSnapshotDataList: List<CoinSnapshotData>
     ) {
@@ -520,6 +524,8 @@ class MainViewModel(
                 )
                 when (result) {
                     is KubitNetworkResult.Success<ExchangeRecordData> -> {
+                        KubitSession.depositKRW(realDepositPrice)
+
                         val exchangeRecordList = exchangeRecordData.value
                         if (exchangeRecordList != null) {
                             val newList = arrayListOf(result.data)
@@ -571,6 +577,8 @@ class MainViewModel(
                 )
                 when (result) {
                     is KubitNetworkResult.Success<ExchangeRecordData> -> {
+                        KubitSession.withdrawalKRW(realWithdrawalPrice)
+
                         val exchangeRecordList = exchangeRecordData.value
                         if (exchangeRecordList != null) {
                             val newList = arrayListOf(result.data)
@@ -623,6 +631,7 @@ class MainViewModel(
                     _investmentRecordData.value = null
                     _investmentNotYetData.value = null
                     _exchangeRecordData.value = listOf()
+                    _resetResult.value = walletOverall
                 }
 
                 is KubitNetworkResult.Refresh -> {
@@ -643,7 +652,6 @@ class MainViewModel(
             }
         }
     }
-
 
     fun requestWalletOverall() {
         viewModelScope.launch {
