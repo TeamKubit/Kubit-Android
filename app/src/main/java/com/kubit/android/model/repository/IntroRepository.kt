@@ -19,7 +19,7 @@ class IntroRepository(
     suspend fun makeMarketCodeRequest(): NetworkResult<KubitMarketData> {
         return withContext(Dispatchers.IO) {
             val strUrl = "${UPBIT_API_HOST_URL}market/all"
-            val hsParams = HashMap<String, String>().apply {
+            val hsParams = HashMap<String, Any>().apply {
                 put("isDetails", "true")
             }
             val message = sendRequest(strUrl, hsParams, "GET")

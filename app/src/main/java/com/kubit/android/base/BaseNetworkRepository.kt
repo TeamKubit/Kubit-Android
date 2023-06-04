@@ -28,7 +28,7 @@ open class BaseNetworkRepository(
 
     protected fun sendRequest(
         strUrl: String,
-        hsParams: HashMap<String, String>,
+        hsParams: HashMap<String, Any>,
         urlState: String
     ): String {
         val connection: HttpURLConnection
@@ -93,7 +93,7 @@ open class BaseNetworkRepository(
 
     protected fun sendRequestToKubitServer(
         strUrl: String,
-        hsParams: HashMap<String, String>,
+        hsParams: HashMap<String, Any>,
         urlState: String,
         authorization: String = ""
     ): String {
@@ -104,7 +104,6 @@ open class BaseNetworkRepository(
                 if (urlState == "GET") URL("${strUrl}?${getParams(hsParams)}") else URL(strUrl)
 
             DLog.d(TAG, "strUrl=$strUrl")
-            DLog.d(TAG, "hsParams=$hsParams")
             // Https Protocol Check
             connection = if (url.protocol == "https") {
                 trustAllHosts()
@@ -134,6 +133,7 @@ open class BaseNetworkRepository(
                 val writer = BufferedWriter(OutputStreamWriter(os, "UTF-8"))
 
                 val jsonParams = getParamsToJson(hsParams)
+                DLog.d(TAG, "jsonParams=$jsonParams")
                 writer.write(jsonParams)
 
                 writer.flush()
@@ -176,7 +176,7 @@ open class BaseNetworkRepository(
         return builder.toString()
     }
 
-    private fun getParams(hsParams: HashMap<String, String>): String {
+    private fun getParams(hsParams: HashMap<String, Any>): String {
         val sb = StringBuilder()
 
         val iterator = hsParams.entries.iterator()
@@ -188,13 +188,13 @@ open class BaseNetworkRepository(
 
             sb.append(URLEncoder.encode(entry.key, "UTF-8"))
             sb.append("=")
-            sb.append(URLEncoder.encode(entry.value, "UTF-8"))
+            sb.append(URLEncoder.encode(entry.value.toString(), "UTF-8"))
         }
 
         return sb.toString()
     }
 
-    private fun getParamsToJson(hsParams: HashMap<String, String>): String {
+    private fun getParamsToJson(hsParams: HashMap<String, Any>): String {
         val jsonObj = JSONObject()
 
         val iterator = hsParams.entries.iterator()

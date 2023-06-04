@@ -7,12 +7,15 @@ import com.kubit.android.common.util.JsonParserUtil
 import com.kubit.android.model.data.exchange.ExchangeRecordData
 import com.kubit.android.model.data.investment.InvestmentNotYetData
 import com.kubit.android.model.data.investment.InvestmentRecordData
+import com.kubit.android.model.data.investment.NotYetData
+import com.kubit.android.model.data.investment.RecordData
 import com.kubit.android.model.data.login.LoginSessionData
 import com.kubit.android.model.data.network.KubitNetworkResult
 import com.kubit.android.model.data.network.NetworkResult
 import com.kubit.android.model.data.wallet.WalletOverall
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 
@@ -27,7 +30,7 @@ class KubitRepository(
         pUserPW: String
     ): NetworkResult<LoginSessionData> {
         return withContext(Dispatchers.IO) {
-            val hsParams = HashMap<String, String>().apply {
+            val hsParams = HashMap<String, Any>().apply {
                 put("userId", pUserID)
                 put("password", pUserPW)
             }
@@ -54,7 +57,7 @@ class KubitRepository(
         pRefreshToken: String
     ): NetworkResult<LoginSessionData> {
         return withContext(Dispatchers.IO) {
-            val hsParams = HashMap<String, String>().apply {
+            val hsParams = HashMap<String, Any>().apply {
                 put("refreshToken", pRefreshToken)
             }
             val message = sendRequestToKubitServer(KUBIT_API_REFRESH_TOKEN_URL, hsParams, POST)
@@ -175,6 +178,43 @@ class KubitRepository(
         }
     }
 
+    suspend fun makeRemoveTransactionWaitRequest(
+        pNotYetList: List<NotYetData>,
+        pGrantType: String,
+        pAccessToken: String
+    ): KubitNetworkResult<Triple<WalletOverall, InvestmentRecordData, InvestmentNotYetData>> {
+        return withContext(Dispatchers.IO) {
+            val transactionIdList = JSONArray()
+            for (notYet in pNotYetList) {
+                transactionIdList.put(notYet.transactionID)
+            }
+            val hsParams = HashMap<String, Any>().apply {
+                put("transactionIdList", transactionIdList)
+            }
+            val message = sendRequestToKubitServer(
+                KUBIT_API_TRANSACTION_WAIT_URL,
+                hsParams,
+                PUT,
+                "$pGrantType $pAccessToken"
+            )
+
+            if (message.isNotEmpty()) {
+                try {
+                    val jsonRoot = JSONObject(message)
+                    jsonParserUtil.getRemoveTransactionWaitResponse(jsonRoot)
+                } catch (e: JSONException) {
+                    KubitNetworkResult.Error(e)
+                }
+            } else {
+                KubitNetworkResult.Fail(
+                    application.getString(
+                        R.string.api_connection_fail_msg
+                    )
+                )
+            }
+        }
+    }
+
     /**
      * 입출금 내역 데이터를 요청하는 API를 호출하는 함수
      *
@@ -223,9 +263,9 @@ class KubitRepository(
         pAccessToken: String
     ): KubitNetworkResult<ExchangeRecordData> {
         return withContext(Dispatchers.IO) {
-            val hsParams = HashMap<String, String>().apply {
+            val hsParams = HashMap<String, Any>().apply {
                 put("requestType", "DEPOSIT")
-                put("money", pDepositPrice.toInt().toString())
+                put("money", pDepositPrice.toInt())
             }
             val message = sendRequestToKubitServer(
                 KUBIT_API_USER_BANK,
@@ -264,9 +304,9 @@ class KubitRepository(
         pAccessToken: String
     ): KubitNetworkResult<ExchangeRecordData> {
         return withContext(Dispatchers.IO) {
-            val hsParams = HashMap<String, String>().apply {
+            val hsParams = HashMap<String, Any>().apply {
                 put("requestType", "WITHDRAW")
-                put("money", pWithdrawalPrice.toInt().toString())
+                put("money", pWithdrawalPrice.toInt())
             }
             val message = sendRequestToKubitServer(
                 KUBIT_API_USER_BANK,
@@ -343,11 +383,11 @@ class KubitRepository(
         pAccessToken: String
     ): KubitNetworkResult<WalletOverall> {
         return withContext(Dispatchers.IO) {
-            val hsParams = HashMap<String, String>().apply {
+            val hsParams = HashMap<String, Any>().apply {
                 put("transactionType", pTransactionType)
                 put("marketCode", pMarketCode)
-                put("requestPrice", pRequestPrice.toString())
-                put("quantity", pQuantity.toString())
+                put("requestPrice", pRequestPrice)
+                put("quantity", pQuantity)
             }
             val message = sendRequestToKubitServer(
                 KUBIT_API_TRANSACTION_FIXED_URL,
@@ -390,10 +430,10 @@ class KubitRepository(
         pAccessToken: String
     ): KubitNetworkResult<WalletOverall> {
         return withContext(Dispatchers.IO) {
-            val hsParams = HashMap<String, String>().apply {
+            val hsParams = HashMap<String, Any>().apply {
                 put("marketCode", pMarketCode)
-                put("currentPrice", pCurrentPrice.toString())
-                put("totalPrice", pTotalPrice.toString())
+                put("currentPrice", pCurrentPrice)
+                put("totalPrice", pTotalPrice)
             }
             val message = sendRequestToKubitServer(
                 KUBIT_API_TRANSACTION_MARKET_BID_URL,
@@ -436,10 +476,10 @@ class KubitRepository(
         pAccessToken: String
     ): KubitNetworkResult<WalletOverall> {
         return withContext(Dispatchers.IO) {
-            val hsParams = HashMap<String, String>().apply {
+            val hsParams = HashMap<String, Any>().apply {
                 put("marketCode", pMarketCode)
-                put("currentPrice", pCurrentPrice.toString())
-                put("quantity", pQuantity.toString())
+                put("currentPrice", pCurrentPrice)
+                put("quantity", pQuantity)
             }
             val message = sendRequestToKubitServer(
                 KUBIT_API_TRANSACTION_MARKET_ASK_URL,
@@ -466,26 +506,26 @@ class KubitRepository(
     }
 
     companion object {
-        private const val TAG: String = "LoginRepository"
+        private const val TAG: String = "KubitRepository"
 
-        private const val KUBIT_API_LOGIN_URL: String = "${KUBIT_API_HOST_URL}user/login"
-        private const val KUBIT_API_REFRESH_TOKEN_URL: String = "${KUBIT_API_HOST_URL}user/refresh"
+        private const val KUBIT_API_LOGIN_URL: String = "${KUBIT_API_HOST_URL}user/login/"
+        private const val KUBIT_API_REFRESH_TOKEN_URL: String = "${KUBIT_API_HOST_URL}user/refresh/"
         private const val KUBIT_API_WALLET_OVERALL_URL: String =
-            "${KUBIT_API_HOST_URL}user/wallet_overall"
+            "${KUBIT_API_HOST_URL}user/wallet_overall/"
 
         private const val KUBIT_API_TRANSACTION_COMPLETES_URL: String =
-            "${KUBIT_API_HOST_URL}transaction/completes"
+            "${KUBIT_API_HOST_URL}transaction/completes/"
         private const val KUBIT_API_TRANSACTION_WAIT_URL: String =
-            "${KUBIT_API_HOST_URL}transaction/requests"
+            "${KUBIT_API_HOST_URL}transaction/requests/"
         private const val KUBIT_API_TRANSACTION_FIXED_URL: String =
-            "${KUBIT_API_HOST_URL}transaction/fixed"
+            "${KUBIT_API_HOST_URL}transaction/fixed/"
         private const val KUBIT_API_TRANSACTION_MARKET_BID_URL: String =
-            "${KUBIT_API_HOST_URL}transaction/market/bid"
+            "${KUBIT_API_HOST_URL}transaction/market/bid/"
         private const val KUBIT_API_TRANSACTION_MARKET_ASK_URL: String =
-            "${KUBIT_API_HOST_URL}transaction/market/ask"
+            "${KUBIT_API_HOST_URL}transaction/market/ask/"
 
-        private const val KUBIT_API_USER_BANK: String = "${KUBIT_API_HOST_URL}user/bank"
-        private const val KUBIT_API_USER_RESET: String = "${KUBIT_API_HOST_URL}user/reset"
+        private const val KUBIT_API_USER_BANK: String = "${KUBIT_API_HOST_URL}user/bank/"
+        private const val KUBIT_API_USER_RESET: String = "${KUBIT_API_HOST_URL}user/reset/"
     }
 
 }

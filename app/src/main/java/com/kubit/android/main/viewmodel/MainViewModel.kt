@@ -400,7 +400,39 @@ class MainViewModel(
             DLog.d(TAG, "requestRemoveNotYetData() is called!")
             setProgressFlag(true)
             viewModelScope.launch {
+                val result = kubitRepository.makeRemoveTransactionWaitRequest(
+                    pNotYetList = selectedNotYetData,
+                    pGrantType = KubitSession.grantType,
+                    pAccessToken = KubitSession.accessToken
+                )
 
+                when (result) {
+                    is KubitNetworkResult.Success<Triple<WalletOverall, InvestmentRecordData, InvestmentNotYetData>> -> {
+                        val walletOverall = result.data.first
+                        val recordData = result.data.second
+                        val notYetData = result.data.third
+
+                        KubitSession.setWalletOverall(walletOverall.KRW, walletOverall.walletList)
+                        _investmentRecordData.postValue(recordData)
+                        _investmentNotYetData.postValue(notYetData)
+                    }
+
+                    is KubitNetworkResult.Refresh -> {
+                        requestRefreshToken { newGrantType, newAccessToken ->
+                            requestRemoveNotYetData()
+                        }
+                    }
+
+                    is KubitNetworkResult.Fail -> {
+                        DLog.e(TAG, result.failMsg)
+                        setApiFailMsg(result.failMsg)
+                    }
+
+                    is KubitNetworkResult.Error -> {
+                        DLog.e(TAG, result.exception.message, result.exception)
+                        setExceptionData(result.exception)
+                    }
+                }
             }
             true
         } else {
