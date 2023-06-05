@@ -125,7 +125,7 @@ data class CoinSnapshotData(
     /**
      * 검색어와 비교할 문자열
      */
-    private val containQuery: String = nameKor + nameEng + market
+    private val containQuery: String = nameKor + nameEng.lowercase() + market.lowercase()
 ) {
 
     fun contain(pQuery: String): Boolean = containQuery.contains(pQuery)

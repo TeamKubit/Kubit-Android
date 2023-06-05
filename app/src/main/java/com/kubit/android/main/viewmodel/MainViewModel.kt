@@ -126,7 +126,7 @@ class MainViewModel(
         pSnapshotDataList: List<CoinSnapshotData>
     ) {
         val filteredList = arrayListOf<CoinSnapshotData>()
-        val query = searchQuery
+        val query = searchQuery.lowercase()
         for (snapshot in pSnapshotDataList) {
             if (snapshot.contain(query)) {
                 filteredList.add(snapshot)
