@@ -70,15 +70,15 @@ class EnterPriceDialog(
     private val regex: Regex = Regex("0+")
     private var _dotExist: Boolean = when (priceType) {
         Type.UNIT_PRICE -> initUnitPrice.toString().split('.').let { list ->
-            if (list.size < 2) false else !regex.matches(list[1])
+            if (list.size < 2) false else if (list[1].contains("E")) false else !regex.matches(list[1])
         }
 
         Type.QUANTITY -> initQuantity.toString().split('.').let { list ->
-            if (list.size < 2) false else !regex.matches(list[1])
+            if (list.size < 2) false else if (list[1].contains("E")) false else !regex.matches(list[1])
         }
 
         Type.TOTAL_PRICE -> initTotalPrice.toString().split('.').let { list ->
-            if (list.size < 2) false else !regex.matches(list[1])
+            if (list.size < 2) false else if (list[1].contains("E")) false else !regex.matches(list[1])
         }
     }
     private val dotExist: Boolean get() = _dotExist
