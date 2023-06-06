@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.TypedValue
 import java.math.RoundingMode
 import java.text.DecimalFormat
+import kotlin.math.abs
 
 object ConvertUtil {
 
@@ -47,7 +48,7 @@ object ConvertUtil {
      * @param pTradePrice   가격
      */
     fun tradePrice2string(pTradePrice: Double): String {
-        return if (pTradePrice < 100) {
+        return if (abs(pTradePrice) < 100) {
             priceFormatterUnder100.format(pTradePrice)
         } else {
             priceFormatterOver100.format(pTradePrice)
